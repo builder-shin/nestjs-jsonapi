@@ -5,11 +5,11 @@
  * @module utils
  *
  * @dependencies
- * - change-case: camelCase, kebabCase 변환
+ * - change-case-all: camelCase, kebabCase 변환 (CJS/ESM 호환)
  * - pluralize: 단수/복수 변환
  */
 
-import { camelCase, kebabCase } from 'change-case';
+import { camelCase, paramCase } from 'change-case-all';
 import pluralizeLib from 'pluralize';
 
 /**
@@ -25,7 +25,7 @@ import pluralizeLib from 'pluralize';
  * ```
  */
 export function toKebabCase(str: string): string {
-  return kebabCase(str);
+  return paramCase(str);
 }
 
 /**

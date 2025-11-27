@@ -33,10 +33,10 @@ import {
  */
 export class ResourceIdentifierDto {
   @IsString()
-  type: string;
+  type!: string;
 
   @IsString()
-  id: string;
+  id!: string;
 }
 
 /**
@@ -87,7 +87,7 @@ export class RelationshipDataDto {
 export class JsonApiResourceDto {
   /** 리소스 타입 (plural kebab-case) */
   @IsString()
-  type: string;
+  type!: string;
 
   /** 리소스 ID (업데이트 시 필수, 생성 시 선택) */
   @IsString()
@@ -123,7 +123,7 @@ export class JsonApiResourceDto {
 export class JsonApiBodyDto {
   @ValidateNested()
   @Type(() => JsonApiResourceDto)
-  data: JsonApiResourceDto;
+  data!: JsonApiResourceDto;
 }
 
 /**
@@ -145,7 +145,7 @@ export class JsonApiBulkBodyDto {
   @ValidateNested({ each: true })
   @Type(() => JsonApiResourceDto)
   @IsArray()
-  data: JsonApiResourceDto[];
+  data!: JsonApiResourceDto[];
 }
 
 /**

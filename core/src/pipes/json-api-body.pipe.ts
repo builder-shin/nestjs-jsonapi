@@ -59,7 +59,7 @@ export class JsonApiBodyPipe implements PipeTransform {
    * @throws BadRequestException - data 객체가 없는 경우
    * @throws JsonApiValidationException - DTO 검증 실패 시
    */
-  async transform(value: any, metadata: ArgumentMetadata) {
+  async transform(value: any, _metadata: ArgumentMetadata) {
     // JSON:API body에서 data 추출
     if (!value || !value.data) {
       throw new BadRequestException({

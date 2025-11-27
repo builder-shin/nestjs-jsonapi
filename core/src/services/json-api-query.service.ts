@@ -265,7 +265,7 @@ export class JsonApiQueryService {
    * @param model Prisma 모델명 (현재 미사용, 향후 확장용)
    * @returns Prisma findMany 옵션
    */
-  toPrismaOptions(parsed: ParsedQuery, model: string): Record<string, unknown> {
+  toPrismaOptions(parsed: ParsedQuery, _model: string): Record<string, unknown> {
     const options: Record<string, unknown> = {};
 
     // Filter → where

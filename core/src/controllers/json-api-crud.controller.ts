@@ -415,7 +415,7 @@ export abstract class JsonApiCrudController {
   /** index 액션 전 훅 */
   protected async beforeIndex(): Promise<void> {}
   /** index 액션 후 훅 */
-  protected async afterIndex(records: any[]): Promise<void> {}
+  protected async afterIndex(_records: any[]): Promise<void> {}
   /** show 액션 전 훅 (레코드 조회 후) */
   protected async beforeShow(): Promise<void> {}
   /** show 액션 후 훅 */

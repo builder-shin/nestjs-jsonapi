@@ -86,6 +86,7 @@ export function BeforeAction(
   optionsOrMethod?: ActionHookOptions | string,
   ...moreMethodNames: string[]
 ): ClassDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   return (target: Function) => {
     const existing: ActionHookMetadata[] =
       Reflect.getMetadata(BEFORE_ACTION_METADATA, target) || [];

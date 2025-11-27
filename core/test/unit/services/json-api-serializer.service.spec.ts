@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JsonApiSerializerService } from '../../../src/services/json-api-serializer.service';
-import { JsonApiSerializer, Attribute, Relationship } from '../../../src';
+import { JsonApiSerializer, Attribute } from '../../../src';
+import { JsonApiResource } from '../../../src/interfaces/json-api.interface';
 
 // 테스트용 Serializer 정의
 @JsonApiSerializer({ type: 'articles' })
 class TestArticleSerializer {
   @Attribute()
-  title: string;
+  title!: string;
 
   @Attribute()
-  content: string;
+  content!: string;
 
   @Attribute({ name: 'created-at' })
-  createdAt: Date;
+  createdAt!: Date;
 }
 
 describe('JsonApiSerializerService', () => {
@@ -117,8 +118,9 @@ describe('JsonApiSerializerService', () => {
       });
 
       // createdAt이 created-at으로 변환되어야 함
-      expect(result.data?.attributes).toHaveProperty('created-at');
-      expect(result.data?.attributes).not.toHaveProperty('createdAt');
+      const data = result.data as JsonApiResource<typeof article>;
+      expect(data?.attributes).toHaveProperty('created-at');
+      expect(data?.attributes).not.toHaveProperty('createdAt');
     });
   });
 });
