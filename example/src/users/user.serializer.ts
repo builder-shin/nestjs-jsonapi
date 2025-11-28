@@ -5,7 +5,7 @@ import { JsonApiSerializer, Attribute, Relationship } from "@builder-shin/nestjs
  *
  * User 모델을 JSON:API 형식으로 직렬화합니다.
  */
-@JsonApiSerializer("users")
+@JsonApiSerializer({ type: "users" })
 export class UserSerializer {
   @Attribute()
   email: string;

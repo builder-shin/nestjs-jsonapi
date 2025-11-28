@@ -6,7 +6,7 @@ import { UserSerializer } from "../users/user.serializer";
  *
  * Article 모델을 JSON:API 형식으로 직렬화합니다.
  */
-@JsonApiSerializer("articles")
+@JsonApiSerializer({ type: "articles" })
 export class ArticleSerializer {
   @Attribute()
   title: string;
