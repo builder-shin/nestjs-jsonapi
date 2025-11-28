@@ -5,7 +5,7 @@
  * @module interfaces
  */
 
-import { ModuleMetadata, Provider } from '@nestjs/common';
+import { ModuleMetadata, Provider, Type } from '@nestjs/common';
 
 /**
  * ID 타입 설정
@@ -60,9 +60,12 @@ export interface JsonApiModuleOptions {
 
   /**
    * Prisma 서비스 주입 토큰 (선택)
+   * 클래스 타입, 문자열 토큰, 심볼 토큰 모두 지원합니다.
+   * @example PrismaService // 클래스 타입 권장
+   * @example 'PRISMA_SERVICE' // 문자열 토큰
    * @default 'PRISMA_SERVICE'
    */
-  prismaServiceToken?: string | symbol;
+  prismaServiceToken?: Type<unknown> | string | symbol;
 
   /**
    * ID 타입 설정 (선택)
@@ -123,7 +126,9 @@ export interface JsonApiModuleAsyncOptions
   /**
    * Prisma 서비스 주입 토큰 (선택)
    * forRootAsync에서 직접 지정할 때 사용
+   * 클래스 타입, 문자열 토큰, 심볼 토큰 모두 지원합니다.
+   * @example PrismaService // 클래스 타입 권장
    * @default 'PRISMA_SERVICE'
    */
-  prismaServiceToken?: string | symbol;
+  prismaServiceToken?: Type<unknown> | string | symbol;
 }
