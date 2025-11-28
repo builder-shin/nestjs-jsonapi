@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
 import { JsonApiModule } from '../../../src';
-import { PrismaService } from './prisma.service';
+import { PrismaModule } from './prisma.module';
 import { ArticleController } from './article.controller';
+import { WhitelistIgnoreArticleController } from './whitelist-ignore.controller';
+import { WhitelistErrorArticleController } from './whitelist-error.controller';
+import { WhitelistDisabledArticleController } from './whitelist-disabled.controller';
 import { ArticleSerializer } from './article.serializer';
 
 @Module({
   imports: [
+    PrismaModule,
     JsonApiModule.forRoot({
       pagination: {
         defaultLimit: 20,
@@ -15,14 +19,12 @@ import { ArticleSerializer } from './article.serializer';
       prismaServiceToken: 'PRISMA_SERVICE',
     }),
   ],
-  controllers: [ArticleController],
-  providers: [
-    PrismaService,
-    {
-      provide: 'PRISMA_SERVICE',
-      useExisting: PrismaService,
-    },
-    ArticleSerializer,
+  controllers: [
+    ArticleController,
+    WhitelistIgnoreArticleController,
+    WhitelistErrorArticleController,
+    WhitelistDisabledArticleController,
   ],
+  providers: [ArticleSerializer],
 })
 export class AppModule {}

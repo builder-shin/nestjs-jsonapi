@@ -6,3 +6,4 @@
  */
 
 export * from './json-api-validation.exception';
+export * from './json-api-query.exception';

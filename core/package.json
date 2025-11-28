@@ -6,7 +6,9 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/builder-shin/nestjs-jsonapi.git",
@@ -59,6 +61,7 @@
     "@types/jest": "^29.5.0",
     "@types/node": "^22.0.0",
     "@types/pluralize": "^0.0.33",
+    "@types/supertest": "^6.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "eslint": "^9.0.0",

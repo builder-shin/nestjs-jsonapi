@@ -15,6 +15,8 @@ import {
   ParsedQuery,
   ParsedFilterCondition,
   FilterOperator,
+  QueryWhitelistOptions,
+  QueryValidationResult,
 } from '../interfaces';
 import {
   toCamelCase,
@@ -84,6 +86,107 @@ export class JsonApiQueryService {
       include: this.parseInclude(query.include as string),
       fields: this.parseFields(query.fields),
     };
+  }
+
+  /**
+   * 화이트리스트가 적용된 쿼리 파싱
+   *
+   * Request에서 쿼리 파라미터를 파싱하고, 화이트리스트 옵션에 따라
+   * 허용되지 않은 필터/정렬/include/fields를 검증합니다.
+   *
+   * @remarks
+   * - whitelist가 undefined면 검증을 건너뛰고 기존 parse 동작을 수행합니다 (하위 호환)
+   * - onDisallowed: 'ignore' 모드에서는 허용되지 않은 파라미터를 warnings에 기록하고 제거
+   * - onDisallowed: 'error' 모드에서는 허용되지 않은 파라미터를 errors에 기록하고 제거
+   *
+   * @param request Express Request 객체
+   * @param whitelist 화이트리스트 옵션 (선택)
+   * @returns 검증된 파싱 결과와 경고/에러 메시지
+   *
+   * @example
+   * ```typescript
+   * const whitelist: QueryWhitelistOptions = {
+   *   allowedFilters: ['status', 'createdAt'],
+   *   allowedSorts: ['createdAt', 'title'],
+   *   allowedIncludes: ['author'],
+   *   maxIncludeDepth: 2,
+   *   onDisallowed: 'error',
+   * };
+   *
+   * const { parsed, warnings, errors } = queryService.parseWithWhitelist(
+   *   request,
+   *   whitelist
+   * );
+   *
+   * if (errors.length > 0) {
+   *   throw new BadRequestException({ errors });
+   * }
+   * ```
+   */
+  parseWithWhitelist(
+    request: Request,
+    whitelist?: QueryWhitelistOptions,
+  ): QueryValidationResult {
+    const parsed = this.parse(request);
+
+    // 화이트리스트가 없으면 검증 스킵 (하위 호환)
+    if (!whitelist) {
+      return { parsed, warnings: [], errors: [] };
+    }
+
+    const warnings: string[] = [];
+    const errors: string[] = [];
+    const onDisallowed = whitelist.onDisallowed ?? 'ignore';
+
+    // 필터 검증
+    if (whitelist.allowedFilters !== undefined) {
+      parsed.filter = this.validateFilters(
+        parsed.filter,
+        whitelist.allowedFilters,
+        onDisallowed,
+        warnings,
+        errors,
+      );
+    }
+
+    // 정렬 검증
+    if (whitelist.allowedSorts !== undefined) {
+      parsed.sort = this.validateSorts(
+        parsed.sort,
+        whitelist.allowedSorts,
+        onDisallowed,
+        warnings,
+        errors,
+      );
+    }
+
+    // Include 검증
+    if (
+      whitelist.allowedIncludes !== undefined ||
+      whitelist.maxIncludeDepth !== undefined
+    ) {
+      parsed.include = this.validateIncludes(
+        parsed.include,
+        whitelist.allowedIncludes,
+        whitelist.maxIncludeDepth,
+        onDisallowed,
+        warnings,
+        errors,
+      );
+    }
+
+    // Fields 검증
+    if (whitelist.allowedFields !== undefined) {
+      parsed.fields = this.validateFields(
+        parsed.fields,
+        whitelist.allowedFields,
+        onDisallowed,
+        warnings,
+        errors,
+      );
+    }
+
+    return { parsed, warnings, errors };
   }
 
   /**
@@ -395,5 +498,246 @@ export class JsonApiQueryService {
     // 재귀 호출로 다음 레벨 처리
     const nested = obj[current] as { include: Record<string, boolean | object> };
     this.setNestedInclude(nested.include, rest);
+  }
+
+  // ========================================
+  // 화이트리스트 검증 메서드
+  // ========================================
+
+  /**
+   * 필터 조건 검증
+   *
+   * 허용된 필드 목록을 기반으로 필터 조건을 검증합니다.
+   * 중첩 필드의 경우 부모 필드가 허용되면 자식 필드도 허용됩니다.
+   *
+   * @param filters 파싱된 필터 조건 배열
+   * @param allowed 허용된 필터 필드 목록
+   * @param onDisallowed 허용되지 않은 필터 처리 방식
+   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
+   * @param errors 에러 메시지를 추가할 배열 (error 모드)
+   * @returns 검증을 통과한 필터 조건 배열
+   */
+  private validateFilters(
+    filters: ParsedFilterCondition[],
+    allowed: string[],
+    onDisallowed: 'ignore' | 'error',
+    warnings: string[],
+    errors: string[],
+  ): ParsedFilterCondition[] {
+    return filters.filter((condition) => {
+      const isAllowed = this.isFieldAllowed(condition.field, allowed);
+
+      if (!isAllowed) {
+        const message = `Filter field '${condition.field}' is not allowed`;
+        if (onDisallowed === 'error') {
+          errors.push(message);
+        } else {
+          warnings.push(message);
+        }
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * 정렬 조건 검증
+   *
+   * 허용된 필드 목록을 기반으로 정렬 조건을 검증합니다.
+   *
+   * @param sorts 파싱된 정렬 조건 배열
+   * @param allowed 허용된 정렬 필드 목록
+   * @param onDisallowed 허용되지 않은 정렬 처리 방식
+   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
+   * @param errors 에러 메시지를 추가할 배열 (error 모드)
+   * @returns 검증을 통과한 정렬 조건 배열
+   */
+  private validateSorts(
+    sorts: { field: string; order: 'asc' | 'desc' }[],
+    allowed: string[],
+    onDisallowed: 'ignore' | 'error',
+    warnings: string[],
+    errors: string[],
+  ): { field: string; order: 'asc' | 'desc' }[] {
+    return sorts.filter((sort) => {
+      const isAllowed = allowed.includes(sort.field);
+
+      if (!isAllowed) {
+        const message = `Sort field '${sort.field}' is not allowed`;
+        if (onDisallowed === 'error') {
+          errors.push(message);
+        } else {
+          warnings.push(message);
+        }
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * Include 관계 검증
+   *
+   * 허용된 관계 목록과 최대 깊이를 기반으로 include를 검증합니다.
+   * 부모 관계가 허용되면 자식 관계도 허용됩니다.
+   *
+   * @param includes 파싱된 include 배열
+   * @param allowed 허용된 include 관계 목록 (undefined면 깊이만 검증)
+   * @param maxDepth 최대 include 깊이 (undefined면 무제한)
+   * @param onDisallowed 허용되지 않은 include 처리 방식
+   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
+   * @param errors 에러 메시지를 추가할 배열 (error 모드)
+   * @returns 검증을 통과한 include 배열
+   */
+  private validateIncludes(
+    includes: string[],
+    allowed: string[] | undefined,
+    maxDepth: number | undefined,
+    onDisallowed: 'ignore' | 'error',
+    warnings: string[],
+    errors: string[],
+  ): string[] {
+    return includes.filter((include) => {
+      // 깊이 체크
+      if (maxDepth !== undefined) {
+        const depth = include.split('.').length;
+        if (depth > maxDepth) {
+          const message = `Include '${include}' exceeds max depth of ${maxDepth}`;
+          if (onDisallowed === 'error') {
+            errors.push(message);
+          } else {
+            warnings.push(message);
+          }
+          return false;
+        }
+      }
+
+      // 허용 목록 체크
+      if (allowed !== undefined) {
+        const isAllowed = this.isIncludeAllowed(include, allowed);
+        if (!isAllowed) {
+          const message = `Include '${include}' is not allowed`;
+          if (onDisallowed === 'error') {
+            errors.push(message);
+          } else {
+            warnings.push(message);
+          }
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Sparse fieldsets 검증
+   *
+   * 타입별로 허용된 필드 목록을 기반으로 fields를 검증합니다.
+   * 특정 타입에 대한 설정이 없으면 해당 타입의 모든 필드를 허용합니다.
+   *
+   * @param fields 파싱된 fields 객체 (타입별 필드 배열)
+   * @param allowed 타입별 허용된 필드 목록
+   * @param onDisallowed 허용되지 않은 필드 처리 방식
+   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
+   * @param errors 에러 메시지를 추가할 배열 (error 모드)
+   * @returns 검증을 통과한 fields 객체
+   */
+  private validateFields(
+    fields: Record<string, string[]>,
+    allowed: Record<string, string[]>,
+    onDisallowed: 'ignore' | 'error',
+    warnings: string[],
+    errors: string[],
+  ): Record<string, string[]> {
+    const validated: Record<string, string[]> = {};
+
+    for (const [type, fieldList] of Object.entries(fields)) {
+      const allowedFields = allowed[type];
+
+      if (!allowedFields) {
+        // 해당 타입에 대한 설정 없음 → 모두 허용
+        validated[type] = fieldList;
+        continue;
+      }
+
+      validated[type] = fieldList.filter((field) => {
+        const isAllowed = allowedFields.includes(field);
+        if (!isAllowed) {
+          const message = `Field '${field}' for type '${type}' is not allowed`;
+          if (onDisallowed === 'error') {
+            errors.push(message);
+          } else {
+            warnings.push(message);
+          }
+        }
+        return isAllowed;
+      });
+    }
+
+    return validated;
+  }
+
+  /**
+   * 필드 허용 여부 확인 (중첩 필드 지원)
+   *
+   * 중첩 필드의 경우 부모 필드가 허용되면 자식 필드도 허용됩니다.
+   *
+   * @example
+   * ```typescript
+   * // allowed: ['author', 'author.name', 'status']
+   * isFieldAllowed('author.name', allowed)   // true (정확히 일치)
+   * isFieldAllowed('author.email', allowed)  // true ('author'가 허용됨)
+   * isFieldAllowed('comments.author', allowed) // false
+   * ```
+   *
+   * @param field 확인할 필드명
+   * @param allowed 허용된 필드 목록
+   * @returns 허용 여부
+   */
+  private isFieldAllowed(field: string, allowed: string[]): boolean {
+    // 정확히 일치
+    if (allowed.includes(field)) return true;
+
+    // 중첩 필드: 부모 필드가 허용되면 자식도 허용
+    // 예: 'author'가 허용되면 'author.name', 'author.email' 등 모두 허용
+    const parts = field.split('.');
+    for (let i = 1; i < parts.length; i++) {
+      const parent = parts.slice(0, i).join('.');
+      if (allowed.includes(parent)) return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Include 허용 여부 확인 (중첩 관계 지원)
+   *
+   * 중첩 관계의 경우 부모 관계가 허용되면 자식 관계도 허용됩니다.
+   *
+   * @example
+   * ```typescript
+   * // allowed: ['author', 'comments']
+   * isIncludeAllowed('author', allowed)          // true
+   * isIncludeAllowed('author.profile', allowed)  // true (author가 허용됨)
+   * isIncludeAllowed('tags', allowed)            // false
+   * ```
+   *
+   * @param include 확인할 include 관계
+   * @param allowed 허용된 include 관계 목록
+   * @returns 허용 여부
+   */
+  private isIncludeAllowed(include: string, allowed: string[]): boolean {
+    // 정확히 일치
+    if (allowed.includes(include)) return true;
+
+    // 중첩: 부모가 허용되면 자식도 허용
+    const parts = include.split('.');
+    for (let i = 1; i < parts.length; i++) {
+      const parent = parts.slice(0, i).join('.');
+      if (allowed.includes(parent)) return true;
+    }
+
+    return false;
   }
 }

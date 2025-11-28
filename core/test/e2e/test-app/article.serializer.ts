@@ -6,19 +6,19 @@ import type { CommentSerializer } from './comment.serializer';
 @JsonApiSerializer({ type: 'articles' })
 export class ArticleSerializer {
   @Attribute()
-  title: string;
+  title!: string;
 
   @Attribute()
-  content: string;
+  content!: string;
 
   @Attribute()
-  status: string;
+  status!: string;
 
   @Attribute({ name: 'created-at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Attribute({ name: 'updated-at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   /**
    * 순환 참조 관계: ArticleSerializer ↔ AuthorSerializer
@@ -27,10 +27,10 @@ export class ArticleSerializer {
   @Relationship(() => require('./author.serializer').AuthorSerializer, {
     type: 'hasOne',
   })
-  author: AuthorSerializer;
+  author!: AuthorSerializer;
 
   @Relationship(() => require('./comment.serializer').CommentSerializer, {
     type: 'hasMany',
   })
-  comments: CommentSerializer[];
+  comments!: CommentSerializer[];
 }

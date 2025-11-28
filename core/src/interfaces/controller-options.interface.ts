@@ -6,6 +6,7 @@
  */
 
 import { Type } from '@nestjs/common';
+import { QueryWhitelistOptions } from './query-options.interface';
 
 /**
  * 기본 CRUD 액션 타입
@@ -114,6 +115,35 @@ export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
    * @example 'articles'
    */
   type?: string;
+
+  /**
+   * 쿼리 파라미터 허용 목록 설정
+   *
+   * 필터, 정렬, include, fields 등의 쿼리 파라미터를 제한하여
+   * 보안과 성능을 강화합니다.
+   *
+   * 설정하지 않으면 모든 쿼리 파라미터가 허용됩니다 (하위 호환).
+   *
+   * @example
+   * ```typescript
+   * // 특정 필터/정렬/include만 허용
+   * query: {
+   *   allowedFilters: ['status', 'createdAt'],
+   *   allowedSorts: ['createdAt', '-updatedAt'],
+   *   allowedIncludes: ['author', 'comments'],
+   *   maxIncludeDepth: 2,
+   *   onDisallowed: 'error',
+   * }
+   *
+   * // 모든 쿼리 비활성화
+   * query: {
+   *   allowedFilters: [],
+   *   allowedSorts: [],
+   *   allowedIncludes: [],
+   * }
+   * ```
+   */
+  query?: QueryWhitelistOptions;
 }
 
 /**

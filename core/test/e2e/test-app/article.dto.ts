@@ -18,11 +18,11 @@ export class CreateArticleDto {
   @IsNotEmpty()
   @MinLength(1)
   @MaxLength(255)
-  title: string;
+  title!: string;
 
   @IsString()
   @IsNotEmpty()
-  content: string;
+  content!: string;
 
   @IsEnum(ArticleStatus)
   @IsOptional()

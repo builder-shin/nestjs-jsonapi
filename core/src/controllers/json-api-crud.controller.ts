@@ -54,7 +54,11 @@ import {
   ActionHookOptions,
   ParsedQuery,
 } from "../interfaces";
-import { JsonApiValidationException } from "../exceptions";
+import {
+  JsonApiValidationException,
+  JsonApiQueryException,
+  QueryValidationError,
+} from "../exceptions";
 import {
   BEFORE_ACTION_METADATA,
   AFTER_ACTION_METADATA,
@@ -575,9 +579,23 @@ export abstract class JsonApiCrudController {
   async index(@Req() request: Request): Promise<JsonApiDocument> {
     return this.executeAction("index", async () => {
       this.request = request;
-      this.parsedQuery = this.queryService.parse(request);
       this.record = null;
       this.model = {};
+
+      // 화이트리스트 적용된 쿼리 파싱
+      const { parsed, errors } = this.queryService.parseWithWhitelist(
+        request,
+        this.options.query
+      );
+
+      // onDisallowed: 'error' 모드에서 에러 발생 시
+      if (errors.length > 0) {
+        throw new JsonApiQueryException(
+          errors.map((msg) => this.parseErrorMessage(msg))
+        );
+      }
+
+      this.parsedQuery = parsed;
 
       // beforeIndex 훅
       await this.beforeIndex();
@@ -627,8 +645,22 @@ export abstract class JsonApiCrudController {
   ): Promise<JsonApiDocument> {
     return this.executeAction("show", async () => {
       this.request = request;
-      this.parsedQuery = this.queryService.parse(request);
       this.model = {};
+
+      // 화이트리스트 적용된 쿼리 파싱
+      const { parsed, errors } = this.queryService.parseWithWhitelist(
+        request,
+        this.options.query
+      );
+
+      // onDisallowed: 'error' 모드에서 에러 발생 시
+      if (errors.length > 0) {
+        throw new JsonApiQueryException(
+          errors.map((msg) => this.parseErrorMessage(msg))
+        );
+      }
+
+      this.parsedQuery = parsed;
 
       // 레코드 조회 → this.record에 저장
       await this.findRecord(id);
@@ -1088,5 +1120,61 @@ export abstract class JsonApiCrudController {
    */
   protected getResourceType(): string {
     return this.options.type || pluralize(this.options.model);
+  }
+
+  /**
+   * 쿼리 검증 에러 메시지를 QueryValidationError로 변환
+   *
+   * parseWithWhitelist에서 반환되는 에러 메시지 문자열을
+   * JSON:API 형식의 QueryValidationError 객체로 변환합니다.
+   *
+   * @param message 에러 메시지 문자열
+   * @returns QueryValidationError 객체
+   */
+  private parseErrorMessage(message: string): QueryValidationError {
+    // Filter field 'xxx' is not allowed
+    const filterMatch = message.match(/Filter field '([^']+)' is not allowed/);
+    if (filterMatch) {
+      return JsonApiQueryException.disallowedFilter(filterMatch[1]);
+    }
+
+    // Sort field 'xxx' is not allowed
+    const sortMatch = message.match(/Sort field '([^']+)' is not allowed/);
+    if (sortMatch) {
+      return JsonApiQueryException.disallowedSort(sortMatch[1]);
+    }
+
+    // Include 'xxx' exceeds max depth of N
+    const depthMatch = message.match(
+      /Include '([^']+)' exceeds max depth of (\d+)/
+    );
+    if (depthMatch) {
+      return JsonApiQueryException.includeDepthExceeded(
+        depthMatch[1],
+        parseInt(depthMatch[2], 10)
+      );
+    }
+
+    // Include 'xxx' is not allowed
+    const includeMatch = message.match(/Include '([^']+)' is not allowed/);
+    if (includeMatch) {
+      return JsonApiQueryException.disallowedInclude(includeMatch[1]);
+    }
+
+    // Field 'xxx' for type 'yyy' is not allowed
+    const fieldMatch = message.match(
+      /Field '([^']+)' for type '([^']+)' is not allowed/
+    );
+    if (fieldMatch) {
+      return JsonApiQueryException.disallowedField(fieldMatch[1], fieldMatch[2]);
+    }
+
+    // 알 수 없는 에러 형식은 일반 에러로 반환
+    return {
+      status: "400",
+      code: "INVALID_QUERY_PARAMETER",
+      title: "Invalid Query Parameter",
+      detail: message,
+    };
   }
 }
