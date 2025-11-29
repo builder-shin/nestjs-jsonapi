@@ -1,6 +1,6 @@
 {
   "name": "@builder-shin/nestjs-jsonapi",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "NestJS JSON:API 1.1 CRUD package with Prisma ORM",
   "author": "builder-shin",
   "license": "MIT",
