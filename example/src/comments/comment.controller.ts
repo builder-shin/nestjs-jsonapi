@@ -15,14 +15,14 @@ import { CreateCommentDto, UpdateCommentDto } from "./dto";
 /**
  * CommentController
  *
- * 댓글 리소스에 대한 JSON:API CRUD 엔드포인트를 제공합니다.
+ * Provides JSON:API CRUD endpoints for the comment resource.
  *
- * 사용 가능한 엔드포인트:
- * - GET    /comments          - 댓글 목록 조회
- * - GET    /comments/:id      - 댓글 상세 조회
- * - POST   /comments          - 댓글 생성
- * - PATCH  /comments/:id      - 댓글 수정
- * - DELETE /comments/:id      - 댓글 삭제
+ * Available endpoints:
+ * - GET    /comments          - List comments
+ * - GET    /comments/:id      - Get comment details
+ * - POST   /comments          - Create comment
+ * - PATCH  /comments/:id      - Update comment
+ * - DELETE /comments/:id      - Delete comment
  */
 @Controller("comments")
 @JsonApiController({
@@ -32,9 +32,9 @@ import { CreateCommentDto, UpdateCommentDto } from "./dto";
     create: CreateCommentDto,
     update: UpdateCommentDto,
   },
-  // 허용할 액션
+  // Allowed actions
   only: ["index", "show", "create", "update", "delete"],
-  // 쿼리 파라미터 화이트리스트
+  // Query parameter whitelist
   query: {
     allowedFilters: ["authorId", "articleId", "createdAt"],
     allowedSorts: ["createdAt", "-createdAt"],
@@ -55,7 +55,7 @@ export class CommentController extends JsonApiCrudController {
     super();
   }
 
-  // 추상 getter 구현 (필수)
+  // Abstract getter implementation (required)
   protected get prismaAdapter() {
     return this._prismaAdapter;
   }
@@ -72,22 +72,22 @@ export class CommentController extends JsonApiCrudController {
     return this._moduleOptions;
   }
 
-  // 커스텀 훅 메서드
+  // Custom hook methods
   protected async logRequest(): Promise<void> {
-    console.log(`[Comment] ${this.currentAction} 요청`);
+    console.log(`[Comment] ${this.currentAction} request`);
   }
 
-  // 라이프사이클 훅 오버라이드
+  // Lifecycle hook overrides
   protected async beforeCreate(): Promise<void> {
-    console.log("[Comment] 댓글 생성 전 처리");
+    console.log("[Comment] Pre-create processing");
   }
 
   protected async afterCreate(): Promise<void> {
-    console.log(`[Comment] 댓글 생성 완료: ${this.record?.id}`);
-    // 여기에 알림 로직 등을 추가할 수 있습니다
+    console.log(`[Comment] Comment created: ${this.record?.id}`);
+    // Add notification logic here
   }
 
   protected async beforeDelete(): Promise<void> {
-    console.log(`[Comment] 댓글 삭제 전 처리: ${this.record?.id}`);
+    console.log(`[Comment] Pre-delete processing: ${this.record?.id}`);
   }
 }

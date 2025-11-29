@@ -1,5 +1,5 @@
-// Prisma 스키마 정의
-// User, Article, Comment 간의 관계를 정의합니다.
+// Prisma schema definition
+// Defines relationships between User, Article, and Comment.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,7 +10,7 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// 사용자 모델
+// User model
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -19,12 +19,12 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  // 관계
+  // Relationships
   articles  Article[]
   comments  Comment[]
 }
 
-// 게시글 모델
+// Article model
 model Article {
   id          String    @id @default(uuid())
   title       String
@@ -34,20 +34,20 @@ model Article {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  // 관계
+  // Relationships
   authorId    String
   author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments    Comment[]
 }
 
-// 댓글 모델
+// Comment model
 model Comment {
   id        String   @id @default(uuid())
   body      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // 관계
+  // Relationships
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   articleId String

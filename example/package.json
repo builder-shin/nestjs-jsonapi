@@ -1,7 +1,7 @@
 {
   "name": "@builder-shin/nestjs-jsonapi-example",
   "version": "1.0.0",
-  "description": "NestJS JSON:API 예제 애플리케이션",
+  "description": "NestJS JSON:API Example Application",
   "private": true,
   "scripts": {
     "build": "nest build",

@@ -5,7 +5,7 @@ import { ArticleSerializer } from "../articles/article.serializer";
 /**
  * CommentSerializer
  *
- * Comment 모델을 JSON:API 형식으로 직렬화합니다.
+ * Serializes the Comment model to JSON:API format.
  */
 @JsonApiSerializer({ type: "comments" })
 export class CommentSerializer {
@@ -18,7 +18,7 @@ export class CommentSerializer {
   @Attribute()
   updatedAt: Date;
 
-  // 관계 정의
+  // Relationship definitions
   @Relationship(() => UserSerializer)
   author: unknown;
 

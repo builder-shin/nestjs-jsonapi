@@ -1,146 +1,146 @@
-# NestJS JSON:API 예제
+# NestJS JSON:API Example
 
-`@builder-shin/nestjs-jsonapi` 패키지를 사용한 예제 애플리케이션입니다.
+An example application using the `@builder-shin/nestjs-jsonapi` package.
 
-## 개요
+## Overview
 
-이 예제는 블로그 시스템을 구현하며, 다음 리소스를 포함합니다:
+This example implements a blog system with the following resources:
 
-- **Users** - 사용자 관리
-- **Articles** - 게시글 관리 (커스텀 액션 포함)
-- **Comments** - 댓글 관리
+- **Users** - User management
+- **Articles** - Article management (with custom actions)
+- **Comments** - Comment management
 
-## 시작하기
+## Getting Started
 
-### 1. 의존성 설치
+### 1. Install Dependencies
 
 ```bash
-# 루트 디렉토리에서 실행
+# Run from the root directory
 pnpm install
 ```
 
-### 2. 데이터베이스 설정
+### 2. Database Setup
 
 ```bash
 cd packages/example
 
-# Prisma 클라이언트 생성
+# Generate Prisma client
 pnpm prisma:generate
 
-# 데이터베이스 마이그레이션
+# Run database migrations
 pnpm prisma:migrate
 
-# 시드 데이터 삽입
+# Seed the database
 pnpm prisma:seed
 ```
 
-### 3. 애플리케이션 실행
+### 3. Run the Application
 
 ```bash
-# 개발 모드
+# Development mode
 pnpm start:dev
 
-# 프로덕션 빌드
+# Production build
 pnpm build
 pnpm start:prod
 ```
 
-## API 엔드포인트
+## API Endpoints
 
 ### Users
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| GET | `/users` | 사용자 목록 조회 |
-| GET | `/users/:id` | 사용자 상세 조회 |
-| POST | `/users` | 사용자 생성 |
-| PATCH | `/users/:id` | 사용자 수정 |
-| DELETE | `/users/:id` | 사용자 삭제 |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/users` | Get user list |
+| GET | `/users/:id` | Get user details |
+| POST | `/users` | Create a user |
+| PATCH | `/users/:id` | Update a user |
+| DELETE | `/users/:id` | Delete a user |
 
 ### Articles
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| GET | `/articles` | 게시글 목록 조회 |
-| GET | `/articles/:id` | 게시글 상세 조회 |
-| POST | `/articles` | 게시글 생성 |
-| POST | `/articles/_bulk/create` | 게시글 일괄 생성 |
-| PATCH | `/articles/:id` | 게시글 수정 |
-| DELETE | `/articles/:id` | 게시글 삭제 |
-| POST | `/articles/:id/publish` | 게시글 발행 (커스텀) |
-| POST | `/articles/:id/archive` | 게시글 보관 (커스텀) |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/articles` | Get article list |
+| GET | `/articles/:id` | Get article details |
+| POST | `/articles` | Create an article |
+| POST | `/articles/_bulk/create` | Bulk create articles |
+| PATCH | `/articles/:id` | Update an article |
+| DELETE | `/articles/:id` | Delete an article |
+| POST | `/articles/:id/publish` | Publish article (custom) |
+| POST | `/articles/:id/archive` | Archive article (custom) |
 
 ### Comments
 
-| Method | Endpoint | 설명 |
-|--------|----------|------|
-| GET | `/comments` | 댓글 목록 조회 |
-| GET | `/comments/:id` | 댓글 상세 조회 |
-| POST | `/comments` | 댓글 생성 |
-| PATCH | `/comments/:id` | 댓글 수정 |
-| DELETE | `/comments/:id` | 댓글 삭제 |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/comments` | Get comment list |
+| GET | `/comments/:id` | Get comment details |
+| POST | `/comments` | Create a comment |
+| PATCH | `/comments/:id` | Update a comment |
+| DELETE | `/comments/:id` | Delete a comment |
 
-## 쿼리 파라미터 예시
+## Query Parameter Examples
 
-### 필터링
+### Filtering
 
 ```bash
-# 발행된 게시글만 조회
+# Get only published articles
 GET /articles?filter[status]=published
 
-# 특정 작성자의 게시글
+# Get articles by a specific author
 GET /articles?filter[authorId]=<uuid>
 
-# 특정 날짜 이후 생성된 게시글
+# Get articles created after a specific date
 GET /articles?filter[createdAt][gte]=2024-01-01
 ```
 
-### 정렬
+### Sorting
 
 ```bash
-# 생성일 오름차순
+# Sort by creation date ascending
 GET /articles?sort=createdAt
 
-# 생성일 내림차순
+# Sort by creation date descending
 GET /articles?sort=-createdAt
 
-# 복합 정렬
+# Multi-field sorting
 GET /articles?sort=-publishedAt,title
 ```
 
-### 페이지네이션
+### Pagination
 
 ```bash
-# 처음 10개 조회
+# Get first 10 items
 GET /articles?page[limit]=10&page[offset]=0
 
-# 다음 10개 조회
+# Get next 10 items
 GET /articles?page[limit]=10&page[offset]=10
 ```
 
-### 관계 포함
+### Including Relationships
 
 ```bash
-# 작성자 정보 포함
+# Include author information
 GET /articles?include=author
 
-# 작성자와 댓글 포함
+# Include author and comments
 GET /articles?include=author,comments
 
-# 댓글의 작성자까지 포함 (중첩)
+# Include nested relationships (comment authors)
 GET /articles?include=author,comments.author
 ```
 
 ### Sparse Fieldsets
 
 ```bash
-# 특정 필드만 조회
+# Get only specific fields
 GET /articles?fields[articles]=title,status,createdAt
 ```
 
-## 요청/응답 예시
+## Request/Response Examples
 
-### 게시글 생성
+### Create Article
 
 **Request:**
 ```bash
@@ -151,8 +151,8 @@ Content-Type: application/vnd.api+json
   "data": {
     "type": "articles",
     "attributes": {
-      "title": "새로운 게시글",
-      "content": "게시글 내용입니다.",
+      "title": "New Article",
+      "content": "This is the article content.",
       "authorId": "<user-uuid>"
     }
   }
@@ -166,8 +166,8 @@ Content-Type: application/vnd.api+json
     "type": "articles",
     "id": "<article-uuid>",
     "attributes": {
-      "title": "새로운 게시글",
-      "content": "게시글 내용입니다.",
+      "title": "New Article",
+      "content": "This is the article content.",
       "status": "draft",
       "publishedAt": null,
       "createdAt": "2024-01-15T10:00:00.000Z",
@@ -188,7 +188,7 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-### 관계 포함 조회
+### Query with Included Relationships
 
 **Request:**
 ```bash
@@ -203,8 +203,8 @@ GET /articles?include=author,comments.author
       "type": "articles",
       "id": "<article-uuid>",
       "attributes": {
-        "title": "게시글 제목",
-        "content": "내용",
+        "title": "Article Title",
+        "content": "Content",
         "status": "published"
       },
       "relationships": {
@@ -224,15 +224,15 @@ GET /articles?include=author,comments.author
       "type": "users",
       "id": "<user-uuid>",
       "attributes": {
-        "name": "홍길동",
-        "email": "hong@example.com"
+        "name": "John Doe",
+        "email": "john@example.com"
       }
     },
     {
       "type": "comments",
       "id": "<comment-uuid>",
       "attributes": {
-        "body": "좋은 글입니다!"
+        "body": "Great article!"
       },
       "relationships": {
         "author": {
@@ -244,12 +244,12 @@ GET /articles?include=author,comments.author
 }
 ```
 
-## 주요 기능 시연
+## Key Feature Demonstrations
 
-### 1. Rails-style 훅
+### 1. Rails-style Hooks
 
 ```typescript
-// BeforeAction/AfterAction 데코레이터 사용
+// Using BeforeAction/AfterAction decorators
 @BeforeAction('authenticate')
 @BeforeAction('loadArticle', { only: ['show', 'update', 'delete'] })
 @AfterAction('notifySubscribers', { only: ['publish'] })
@@ -258,21 +258,21 @@ export class ArticleController extends JsonApiCrudController {
 }
 ```
 
-### 2. 라이프사이클 훅
+### 2. Lifecycle Hooks
 
 ```typescript
 protected async beforeCreate(): Promise<void> {
-  // 생성 전 로직
+  // Pre-create logic
   this.model.status = 'draft';
 }
 
 protected async afterCreate(): Promise<void> {
-  // 생성 후 로직 (this.record에 저장된 엔티티)
+  // Post-create logic (saved entity in this.record)
   console.log(`Created: ${this.record?.id}`);
 }
 ```
 
-### 3. 커스텀 액션
+### 3. Custom Actions
 
 ```typescript
 @Post(':id/publish')
@@ -289,7 +289,7 @@ async publish(@Param('id') id: string) {
 }
 ```
 
-### 4. 쿼리 화이트리스트
+### 4. Query Whitelist
 
 ```typescript
 @JsonApiController({
@@ -300,44 +300,44 @@ async publish(@Param('id') id: string) {
     allowedSorts: ['createdAt', '-createdAt', 'title'],
     allowedIncludes: ['author', 'comments'],
     maxIncludeDepth: 2,
-    onDisallowed: 'error', // 허용되지 않은 쿼리 시 에러 발생
+    onDisallowed: 'error', // Throw error on disallowed query parameters
   },
 })
 ```
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 packages/example/
 ├── prisma/
-│   ├── schema.prisma      # 데이터베이스 스키마
-│   └── seed.ts            # 시드 데이터
+│   ├── schema.prisma      # Database schema
+│   └── seed.ts            # Seed data
 ├── src/
-│   ├── prisma/            # Prisma 서비스
+│   ├── prisma/            # Prisma service
 │   │   ├── prisma.module.ts
 │   │   └── prisma.service.ts
-│   ├── users/             # 사용자 모듈
+│   ├── users/             # User module
 │   │   ├── dto/
 │   │   ├── user.controller.ts
 │   │   ├── user.module.ts
 │   │   └── user.serializer.ts
-│   ├── articles/          # 게시글 모듈
+│   ├── articles/          # Article module
 │   │   ├── dto/
 │   │   ├── article.controller.ts
 │   │   ├── article.module.ts
 │   │   └── article.serializer.ts
-│   ├── comments/          # 댓글 모듈
+│   ├── comments/          # Comment module
 │   │   ├── dto/
 │   │   ├── comment.controller.ts
 │   │   ├── comment.module.ts
 │   │   └── comment.serializer.ts
-│   ├── app.module.ts      # 루트 모듈
-│   └── main.ts            # 진입점
+│   ├── app.module.ts      # Root module
+│   └── main.ts            # Entry point
 ├── package.json
 ├── tsconfig.json
 └── nest-cli.json
 ```
 
-## 라이선스
+## License
 
 MIT

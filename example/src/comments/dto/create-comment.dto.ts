@@ -3,18 +3,18 @@ import { IsString, IsNotEmpty, IsUUID } from "class-validator";
 /**
  * CreateCommentDto
  *
- * 댓글 생성 요청 데이터 검증 DTO
+ * DTO for validating comment creation request data
  */
 export class CreateCommentDto {
-  @IsString({ message: "댓글 내용은 문자열이어야 합니다" })
-  @IsNotEmpty({ message: "댓글 내용은 필수입니다" })
+  @IsString({ message: "Comment body must be a string" })
+  @IsNotEmpty({ message: "Comment body is required" })
   body: string;
 
-  @IsUUID("4", { message: "작성자 ID는 유효한 UUID여야 합니다" })
-  @IsNotEmpty({ message: "작성자 ID는 필수입니다" })
+  @IsUUID("4", { message: "Author ID must be a valid UUID" })
+  @IsNotEmpty({ message: "Author ID is required" })
   authorId: string;
 
-  @IsUUID("4", { message: "게시글 ID는 유효한 UUID여야 합니다" })
-  @IsNotEmpty({ message: "게시글 ID는 필수입니다" })
+  @IsUUID("4", { message: "Article ID must be a valid UUID" })
+  @IsNotEmpty({ message: "Article ID is required" })
   articleId: string;
 }

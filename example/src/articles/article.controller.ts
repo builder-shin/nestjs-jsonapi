@@ -17,17 +17,17 @@ import { CreateArticleDto, UpdateArticleDto } from "./dto";
 /**
  * ArticleController
  *
- * 게시글 리소스에 대한 JSON:API CRUD 엔드포인트를 제공합니다.
+ * Provides JSON:API CRUD endpoints for the article resource.
  *
- * 사용 가능한 엔드포인트:
- * - GET    /articles                - 게시글 목록 조회
- * - GET    /articles/:id            - 게시글 상세 조회
- * - POST   /articles                - 게시글 생성
- * - POST   /articles/_bulk/create   - 게시글 일괄 생성
- * - PATCH  /articles/:id            - 게시글 수정
- * - DELETE /articles/:id            - 게시글 삭제
- * - POST   /articles/:id/publish    - 게시글 발행 (커스텀 액션)
- * - POST   /articles/:id/archive    - 게시글 보관 (커스텀 액션)
+ * Available endpoints:
+ * - GET    /articles                - List articles
+ * - GET    /articles/:id            - Get article details
+ * - POST   /articles                - Create article
+ * - POST   /articles/_bulk/create   - Bulk create articles
+ * - PATCH  /articles/:id            - Update article
+ * - DELETE /articles/:id            - Delete article
+ * - POST   /articles/:id/publish    - Publish article (custom action)
+ * - POST   /articles/:id/archive    - Archive article (custom action)
  */
 @Controller("articles")
 @JsonApiController({
@@ -37,9 +37,9 @@ import { CreateArticleDto, UpdateArticleDto } from "./dto";
     create: CreateArticleDto,
     update: UpdateArticleDto,
   },
-  // 허용할 액션 (벌크 생성 포함)
+  // Allowed actions (including bulk create)
   only: ["index", "show", "create", "createMany", "update", "delete"],
-  // 쿼리 파라미터 화이트리스트
+  // Query parameter whitelist
   query: {
     allowedFilters: ["status", "authorId", "createdAt", "title"],
     allowedSorts: ["createdAt", "-createdAt", "title", "-title", "publishedAt", "-publishedAt"],
@@ -62,7 +62,7 @@ export class ArticleController extends JsonApiCrudController {
     super();
   }
 
-  // 추상 getter 구현 (필수)
+  // Abstract getter implementation (required)
   protected get prismaAdapter() {
     return this._prismaAdapter;
   }
@@ -80,7 +80,7 @@ export class ArticleController extends JsonApiCrudController {
   }
 
   /**
-   * 게시글 발행 커스텀 액션
+   * Publish article custom action
    *
    * POST /articles/:id/publish
    */
@@ -103,7 +103,7 @@ export class ArticleController extends JsonApiCrudController {
   }
 
   /**
-   * 게시글 보관 커스텀 액션
+   * Archive article custom action
    *
    * POST /articles/:id/archive
    */
@@ -118,44 +118,44 @@ export class ArticleController extends JsonApiCrudController {
     });
   }
 
-  // 커스텀 훅 메서드
+  // Custom hook methods
   protected async logRequest(): Promise<void> {
-    // 요청 로깅 예시 - 실제 환경에서는 Logger 서비스 사용 권장
-    console.log(`[Article] ${this.currentAction} 요청`);
+    // Request logging example - recommend using Logger service in production
+    console.log(`[Article] ${this.currentAction} request`);
   }
 
   protected async loadArticle(): Promise<void> {
-    // 레코드 로드 (show, update, delete에서 자동으로 호출됨)
-    console.log(`[Article] 레코드 로드 중`);
+    // Load record (automatically called in show, update, delete)
+    console.log(`[Article] Loading record`);
   }
 
   protected async notifySubscribers(): Promise<void> {
-    // 발행 알림 로직
-    console.log(`[Article] 구독자에게 발행 알림 전송: ${this.record?.id}`);
+    // Publish notification logic
+    console.log(`[Article] Sending publish notification to subscribers: ${this.record?.id}`);
   }
 
-  // 라이프사이클 훅 오버라이드
+  // Lifecycle hook overrides
   protected async beforeCreate(): Promise<void> {
-    // 기본 상태를 draft로 설정
+    // Set default status to draft
     if (!this.model.status) {
       this.model.status = "draft";
     }
-    console.log("[Article] 게시글 생성 전 처리");
+    console.log("[Article] Pre-create processing");
   }
 
   protected async afterCreate(): Promise<void> {
-    console.log(`[Article] 게시글 생성 완료: ${this.record?.id}`);
+    console.log(`[Article] Article created: ${this.record?.id}`);
   }
 
   protected async beforeUpdate(): Promise<void> {
-    // 상태가 published로 변경되면 publishedAt 자동 설정
+    // Automatically set publishedAt when status changes to published
     if (this.model.status === "published" && !this.model.publishedAt) {
       this.model.publishedAt = new Date();
     }
-    console.log(`[Article] 게시글 수정 전 처리: ${this.record?.id}`);
+    console.log(`[Article] Pre-update processing: ${this.record?.id}`);
   }
 
   protected async beforeDelete(): Promise<void> {
-    console.log(`[Article] 게시글 삭제 전 처리: ${this.record?.id}`);
+    console.log(`[Article] Pre-delete processing: ${this.record?.id}`);
   }
 }

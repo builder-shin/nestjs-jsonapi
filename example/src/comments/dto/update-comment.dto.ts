@@ -3,10 +3,10 @@ import { IsString, IsOptional } from "class-validator";
 /**
  * UpdateCommentDto
  *
- * 댓글 수정 요청 데이터 검증 DTO
+ * DTO for validating comment update request data
  */
 export class UpdateCommentDto {
   @IsOptional()
-  @IsString({ message: "댓글 내용은 문자열이어야 합니다" })
+  @IsString({ message: "Comment body must be a string" })
   body?: string;
 }

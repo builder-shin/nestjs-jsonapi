@@ -8,15 +8,15 @@ import { CommentModule } from "./comments";
 /**
  * AppModule
  *
- * 애플리케이션의 루트 모듈입니다.
- * JSON:API 모듈과 각 리소스 모듈을 통합합니다.
+ * The root module of the application.
+ * Integrates JSON:API module with each resource module.
  */
 @Module({
   imports: [
-    // Prisma 모듈 (전역)
+    // Prisma module (global)
     PrismaModule,
 
-    // JSON:API 모듈 설정
+    // JSON:API module configuration
     JsonApiModule.forRoot({
       pagination: {
         defaultLimit: 20,
@@ -28,7 +28,7 @@ import { CommentModule } from "./comments";
       debug: true,
     }),
 
-    // 리소스 모듈
+    // Resource modules
     UserModule,
     ArticleModule,
     CommentModule,

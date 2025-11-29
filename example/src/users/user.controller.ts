@@ -16,14 +16,14 @@ import { CreateUserDto, UpdateUserDto } from "./dto";
 /**
  * UserController
  *
- * 사용자 리소스에 대한 JSON:API CRUD 엔드포인트를 제공합니다.
+ * Provides JSON:API CRUD endpoints for the user resource.
  *
- * 사용 가능한 엔드포인트:
- * - GET    /users          - 사용자 목록 조회
- * - GET    /users/:id      - 사용자 상세 조회
- * - POST   /users          - 사용자 생성
- * - PATCH  /users/:id      - 사용자 수정
- * - DELETE /users/:id      - 사용자 삭제
+ * Available endpoints:
+ * - GET    /users          - List users
+ * - GET    /users/:id      - Get user details
+ * - POST   /users          - Create user
+ * - PATCH  /users/:id      - Update user
+ * - DELETE /users/:id      - Delete user
  */
 @Controller("users")
 @JsonApiController({
@@ -33,9 +33,9 @@ import { CreateUserDto, UpdateUserDto } from "./dto";
     create: CreateUserDto,
     update: UpdateUserDto,
   },
-  // 허용할 액션 명시 (bulk 작업 제외)
+  // Specify allowed actions (excluding bulk operations)
   only: ["index", "show", "create", "update", "delete"],
-  // 쿼리 파라미터 화이트리스트
+  // Query parameter whitelist
   query: {
     allowedFilters: ["email", "name", "role", "createdAt"],
     allowedSorts: ["createdAt", "-createdAt", "name", "-name", "email"],
@@ -57,7 +57,7 @@ export class UserController extends JsonApiCrudController {
     super();
   }
 
-  // 추상 getter 구현 (필수)
+  // Abstract getter implementation (required)
   protected get prismaAdapter() {
     return this._prismaAdapter;
   }
@@ -74,28 +74,28 @@ export class UserController extends JsonApiCrudController {
     return this._moduleOptions;
   }
 
-  // 커스텀 훅 메서드
+  // Custom hook methods
   protected async logRequest(): Promise<void> {
-    console.log(`[User] ${this.currentAction} 요청 시작`);
+    console.log(`[User] ${this.currentAction} request started`);
   }
 
   protected async logResponse(): Promise<void> {
-    console.log(`[User] ${this.currentAction} 응답 완료`);
+    console.log(`[User] ${this.currentAction} response completed`);
   }
 
-  // 라이프사이클 훅 오버라이드
+  // Lifecycle hook overrides
   protected async beforeCreate(): Promise<void> {
-    // 이메일 중복 체크 등의 로직을 여기에 추가할 수 있습니다
-    console.log("[User] 사용자 생성 전 처리");
+    // Add email duplication check logic here
+    console.log("[User] Pre-create processing");
   }
 
   protected async afterCreate(): Promise<void> {
-    // 생성 후 알림 발송 등의 로직을 여기에 추가할 수 있습니다
-    console.log(`[User] 사용자 생성 완료: ${this.record?.id}`);
+    // Add post-creation notification logic here
+    console.log(`[User] User created: ${this.record?.id}`);
   }
 
   protected async beforeDelete(): Promise<void> {
-    // 삭제 전 검증 로직을 여기에 추가할 수 있습니다
-    console.log(`[User] 사용자 삭제 전 처리: ${this.record?.id}`);
+    // Add pre-deletion validation logic here
+    console.log(`[User] Pre-delete processing: ${this.record?.id}`);
   }
 }
