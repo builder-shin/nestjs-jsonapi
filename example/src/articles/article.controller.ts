@@ -120,12 +120,13 @@ export class ArticleController extends JsonApiCrudController {
 
   // 커스텀 훅 메서드
   protected async logRequest(): Promise<void> {
-    console.log(`[Article] ${this.currentAction} 요청 - ${this.request.method} ${this.request.url}`);
+    // 요청 로깅 예시 - 실제 환경에서는 Logger 서비스 사용 권장
+    console.log(`[Article] ${this.currentAction} 요청`);
   }
 
   protected async loadArticle(): Promise<void> {
     // 레코드 로드 (show, update, delete에서 자동으로 호출됨)
-    console.log(`[Article] 레코드 로드 중: ${this.request.params.id}`);
+    console.log(`[Article] 레코드 로드 중`);
   }
 
   protected async notifySubscribers(): Promise<void> {

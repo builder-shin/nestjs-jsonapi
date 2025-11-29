@@ -57,10 +57,10 @@ let ArticleController = class ArticleController extends nestjs_jsonapi_1.JsonApi
         });
     }
     async logRequest() {
-        console.log(`[Article] ${this.currentAction} 요청 - ${this.request.method} ${this.request.url}`);
+        console.log(`[Article] ${this.currentAction} 요청`);
     }
     async loadArticle() {
-        console.log(`[Article] 레코드 로드 중: ${this.request.params.id}`);
+        console.log(`[Article] 레코드 로드 중`);
     }
     async notifySubscribers() {
         console.log(`[Article] 구독자에게 발행 알림 전송: ${this.record?.id}`);

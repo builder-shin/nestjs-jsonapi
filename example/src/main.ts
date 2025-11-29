@@ -9,6 +9,9 @@ async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
 
+  // 참고: JSON:API 필터링을 위한 Express 확장 쿼리 파서는
+  // JsonApiModule에서 자동으로 설정됩니다.
+
   // 전역 유효성 검사 파이프 설정
   app.useGlobalPipes(
     new ValidationPipe({
