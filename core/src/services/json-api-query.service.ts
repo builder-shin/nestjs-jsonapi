@@ -1,10 +1,10 @@
 /**
- * JSON:API 쿼리 파싱 서비스
+ * JSON:API query parsing service
  *
  * @packageDocumentation
  * @module services
  *
- * 의존성: constants/metadata.constants.ts, interfaces/*, utils/*
+ * Dependencies: constants/metadata.constants.ts, interfaces/*, utils/*
  */
 
 import { Injectable, Inject } from '@nestjs/common';
@@ -28,24 +28,24 @@ import {
 } from '../utils';
 
 /**
- * JSON:API 쿼리 파싱 서비스
+ * JSON:API query parsing service
  *
- * URL 쿼리 파라미터를 파싱하여 Prisma 쿼리 옵션으로 변환합니다.
+ * Parses URL query parameters and converts them to Prisma query options.
  *
  * @remarks
- * 지원하는 12개 필터 연산자:
- * - eq: 같음 (기본값)
- * - ne: 같지 않음
- * - like: LIKE 검색 (대소문자 구분)
- * - ilike: LIKE 검색 (대소문자 무시)
- * - gt: 초과
- * - gte: 이상
- * - lt: 미만
- * - lte: 이하
- * - in: 배열 내 포함
- * - nin: 배열 내 미포함
- * - null: null 여부
- * - between: 범위
+ * Supports 12 filter operators:
+ * - eq: Equals (default)
+ * - ne: Not equals
+ * - like: LIKE search (case-sensitive)
+ * - ilike: LIKE search (case-insensitive)
+ * - gt: Greater than
+ * - gte: Greater than or equal
+ * - lt: Less than
+ * - lte: Less than or equal
+ * - in: Included in array
+ * - nin: Not included in array
+ * - null: Is null check
+ * - between: Range
  *
  * @example
  * ```typescript
@@ -71,10 +71,10 @@ export class JsonApiQueryService {
   ) {}
 
   /**
-   * Request에서 JSON:API 쿼리 파라미터 파싱
+   * Parse JSON:API query parameters from Request
    *
-   * @param request Express Request 객체
-   * @returns 파싱된 쿼리 구조
+   * @param request Express Request object
+   * @returns Parsed query structure
    */
   parse(request: Request): ParsedQuery {
     const query = request.query;
@@ -89,19 +89,19 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 화이트리스트가 적용된 쿼리 파싱
+   * Parse query with whitelist applied
    *
-   * Request에서 쿼리 파라미터를 파싱하고, 화이트리스트 옵션에 따라
-   * 허용되지 않은 필터/정렬/include/fields를 검증합니다.
+   * Parses query parameters from Request and validates against whitelist options
+   * for disallowed filters/sorts/includes/fields.
    *
    * @remarks
-   * - whitelist가 undefined면 검증을 건너뛰고 기존 parse 동작을 수행합니다 (하위 호환)
-   * - onDisallowed: 'ignore' 모드에서는 허용되지 않은 파라미터를 warnings에 기록하고 제거
-   * - onDisallowed: 'error' 모드에서는 허용되지 않은 파라미터를 errors에 기록하고 제거
+   * - If whitelist is undefined, skips validation and performs existing parse behavior (backward compatible)
+   * - In onDisallowed: 'ignore' mode, records disallowed parameters in warnings and removes them
+   * - In onDisallowed: 'error' mode, records disallowed parameters in errors and removes them
    *
-   * @param request Express Request 객체
-   * @param whitelist 화이트리스트 옵션 (선택)
-   * @returns 검증된 파싱 결과와 경고/에러 메시지
+   * @param request Express Request object
+   * @param whitelist Whitelist options (optional)
+   * @returns Validated parsing result with warning/error messages
    *
    * @example
    * ```typescript
@@ -129,7 +129,7 @@ export class JsonApiQueryService {
   ): QueryValidationResult {
     const parsed = this.parse(request);
 
-    // 화이트리스트가 없으면 검증 스킵 (하위 호환)
+    // Skip validation if no whitelist (backward compatible)
     if (!whitelist) {
       return { parsed, warnings: [], errors: [] };
     }
@@ -138,7 +138,7 @@ export class JsonApiQueryService {
     const errors: string[] = [];
     const onDisallowed = whitelist.onDisallowed ?? 'ignore';
 
-    // 필터 검증
+    // Filter validation
     if (whitelist.allowedFilters !== undefined) {
       parsed.filter = this.validateFilters(
         parsed.filter,
@@ -149,7 +149,7 @@ export class JsonApiQueryService {
       );
     }
 
-    // 정렬 검증
+    // Sort validation
     if (whitelist.allowedSorts !== undefined) {
       parsed.sort = this.validateSorts(
         parsed.sort,
@@ -160,7 +160,7 @@ export class JsonApiQueryService {
       );
     }
 
-    // Include 검증
+    // Include validation
     if (
       whitelist.allowedIncludes !== undefined ||
       whitelist.maxIncludeDepth !== undefined
@@ -175,7 +175,7 @@ export class JsonApiQueryService {
       );
     }
 
-    // Fields 검증
+    // Fields validation
     if (whitelist.allowedFields !== undefined) {
       parsed.fields = this.validateFields(
         parsed.fields,
@@ -190,23 +190,23 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 필터 파라미터 파싱
+   * Parse filter parameters
    *
-   * 지원 형식:
-   * - 단순 필터: ?filter[field]=value (기본 eq 연산자)
-   * - 연산자 필터: ?filter[field][operator]=value
+   * Supported formats:
+   * - Simple filter: ?filter[field]=value (default eq operator)
+   * - Operator filter: ?filter[field][operator]=value
    *
    * @example
    * ?filter[status]=published                    → status eq 'published'
-   * ?filter[name][like]=준원                      → name LIKE '%준원%'
+   * ?filter[name][like]=John                     → name LIKE '%John%'
    * ?filter[age][gte]=18                         → age >= 18
    * ?filter[role][in]=admin,user                 → role IN ['admin', 'user']
    * ?filter[deletedAt][null]=true                → deletedAt IS NULL
    * ?filter[price][between]=100,500              → price BETWEEN 100 AND 500
    * ?filter[author.name][like]=John              → author.name LIKE '%John%'
    *
-   * @param filter 쿼리의 filter 객체
-   * @returns 파싱된 필터 조건 배열
+   * @param filter Filter object from query
+   * @returns Parsed filter condition array
    */
   private parseFilter(filter: unknown): ParsedFilterCondition[] {
     const conditions: ParsedFilterCondition[] = [];
@@ -222,13 +222,13 @@ export class JsonApiQueryService {
         continue;
       }
 
-      // 필드명 유효성 검증 (인젝션 방지)
+      // Field name validation (injection prevention)
       if (!isValidFieldName(field)) {
-        // 유효하지 않은 필드명은 무시 (보안상 에러 정보 노출 최소화)
+        // Invalid field names are ignored (minimize security error information exposure)
         continue;
       }
 
-      // 값이 객체인 경우: filter[field][operator]=value
+      // Value is object: filter[field][operator]=value
       if (typeof value === 'object' && !Array.isArray(value)) {
         const operatorObj = value as Record<string, unknown>;
 
@@ -237,13 +237,13 @@ export class JsonApiQueryService {
             conditions.push({
               field,
               operator: op as FilterOperator,
-              // field를 전달하여 에러 메시지에 포함
+              // Pass field for error message inclusion
               value: parseFilterValue(op as FilterOperator, opValue, field),
             });
           }
         }
       } else {
-        // 단순 값인 경우: filter[field]=value (기본 eq 연산자)
+        // Simple value: filter[field]=value (default eq operator)
         conditions.push({
           field,
           operator: 'eq',
@@ -256,12 +256,12 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 정렬 파라미터 파싱
+   * Parse sort parameters
    *
-   * @example ?sort=-createdAt,title (- prefix는 DESC)
+   * @example ?sort=-createdAt,title (- prefix means DESC)
    *
-   * @param sort 정렬 문자열
-   * @returns 정렬 조건 배열
+   * @param sort Sort string
+   * @returns Sort condition array
    */
   private parseSort(
     sort: string | undefined,
@@ -277,7 +277,7 @@ export class JsonApiQueryService {
         const isDesc = trimmed.startsWith('-');
         const fieldName = isDesc ? trimmed.substring(1) : trimmed;
 
-        // 필드명 유효성 검증 (인젝션 방지)
+        // Field name validation (injection prevention)
         if (!isValidFieldName(fieldName)) {
           return null;
         }
@@ -294,12 +294,12 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 페이지네이션 파라미터 파싱
+   * Parse pagination parameters
    *
    * @example ?page[offset]=0&page[limit]=20
    *
-   * @param page 페이지 객체
-   * @returns 페이지네이션 설정
+   * @param page Page object
+   * @returns Pagination settings
    */
   private parsePage(page: unknown): { offset: number; limit: number } {
     const { defaultLimit, maxLimit } = this.options.pagination;
@@ -317,12 +317,12 @@ export class JsonApiQueryService {
   }
 
   /**
-   * Include 파라미터 파싱 (관계 포함)
+   * Parse include parameters (relationship inclusion)
    *
    * @example ?include=comments,author.profile
    *
-   * @param include include 문자열
-   * @returns 포함할 관계 배열
+   * @param include Include string
+   * @returns Array of relationships to include
    */
   private parseInclude(include: string | undefined): string[] {
     if (!include) {
@@ -335,12 +335,12 @@ export class JsonApiQueryService {
   }
 
   /**
-   * Sparse Fieldsets 파싱
+   * Parse sparse fieldsets
    *
    * @example ?fields[articles]=title,content&fields[comments]=body
    *
-   * @param fields fields 객체
-   * @returns 타입별 선택 필드 맵
+   * @param fields Fields object
+   * @returns Map of selected fields by type
    */
   private parseFields(fields: unknown): Record<string, string[]> {
     if (!fields || typeof fields !== 'object') {
@@ -362,11 +362,11 @@ export class JsonApiQueryService {
   }
 
   /**
-   * ParsedQuery를 Prisma findMany 옵션으로 변환
+   * Convert ParsedQuery to Prisma findMany options
    *
-   * @param parsed 파싱된 쿼리 구조
-   * @param model Prisma 모델명 (현재 미사용, 향후 확장용)
-   * @returns Prisma findMany 옵션
+   * @param parsed Parsed query structure
+   * @param model Prisma model name (currently unused, for future extension)
+   * @returns Prisma findMany options
    */
   toPrismaOptions(parsed: ParsedQuery, _model: string): Record<string, unknown> {
     const options: Record<string, unknown> = {};
@@ -396,10 +396,10 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 필터 조건들을 Prisma where 절로 변환
+   * Convert filter conditions to Prisma where clause
    *
-   * @param conditions 파싱된 필터 조건 배열
-   * @returns Prisma where 객체
+   * @param conditions Parsed filter condition array
+   * @returns Prisma where object
    */
   filterToPrismaWhere(
     conditions: ParsedFilterCondition[],
@@ -410,13 +410,13 @@ export class JsonApiQueryService {
       const { field, operator, value } = condition;
       const prismaCondition = operatorToPrisma(operator, value);
 
-      // 중첩 관계 처리 (예: author.name → { author: { name: condition } })
+      // Nested relationship handling (e.g., author.name → { author: { name: condition } })
       if (field.includes('.')) {
         setNestedValue(where, field, prismaCondition, toCamelCase);
       } else {
         const camelField = toCamelCase(field);
 
-        // 같은 필드에 여러 조건이 있을 경우 병합
+        // Merge if multiple conditions exist for the same field
         if (where[camelField] && typeof where[camelField] === 'object') {
           where[camelField] = {
             ...(where[camelField] as object),
@@ -432,35 +432,35 @@ export class JsonApiQueryService {
   }
 
   /**
-   * Include 배열을 Prisma include 객체로 변환
+   * Convert include array to Prisma include object
    *
    * @example
-   * // 단순 관계
+   * // Simple relationship
    * ['comments'] → { comments: true }
    *
-   * // 중첩 관계
+   * // Nested relationship
    * ['author.profile'] → { author: { include: { profile: true } } }
    *
-   * // 깊은 중첩
+   * // Deep nesting
    * ['author.profile.avatar'] → { author: { include: { profile: { include: { avatar: true } } } } }
    *
-   * // 복합 관계
+   * // Composite relationships
    * ['comments', 'author.profile'] → { comments: true, author: { include: { profile: true } } }
    *
-   * @param includes include 문자열 배열
-   * @returns Prisma include 객체
+   * @param includes Include string array
+   * @returns Prisma include object
    */
   includeToPrismaInclude(includes: string[]): Record<string, boolean | object> {
     const result: Record<string, boolean | object> = {};
 
     for (const include of includes) {
       if (include.includes('.')) {
-        // 중첩 관계 처리
+        // Nested relationship handling
         const parts = include.split('.');
         this.setNestedInclude(result, parts.map(toCamelCase));
       } else {
         const part = toCamelCase(include);
-        // 이미 중첩 객체로 설정되어 있으면 유지
+        // Maintain if already set as nested object
         if (!result[part]) {
           result[part] = true;
         }
@@ -471,10 +471,10 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 중첩된 include 구조를 재귀적으로 생성
+   * Recursively create nested include structure
    *
-   * @param obj 대상 객체
-   * @param parts 경로 배열 (예: ['author', 'profile', 'avatar'])
+   * @param obj Target object
+   * @param parts Path array (e.g., ['author', 'profile', 'avatar'])
    */
   private setNestedInclude(
     obj: Record<string, boolean | object>,
@@ -483,39 +483,39 @@ export class JsonApiQueryService {
     const [current, ...rest] = parts;
 
     if (rest.length === 0) {
-      // 마지막 부분: 이미 객체면 유지, 아니면 true로 설정
+      // Last part: maintain if already object, otherwise set to true
       if (!obj[current] || obj[current] === true) {
         obj[current] = true;
       }
       return;
     }
 
-    // 중간 부분: include 구조 생성
+    // Middle part: create include structure
     if (!obj[current] || obj[current] === true) {
       obj[current] = { include: {} };
     }
 
-    // 재귀 호출로 다음 레벨 처리
+    // Recursive call to handle next level
     const nested = obj[current] as { include: Record<string, boolean | object> };
     this.setNestedInclude(nested.include, rest);
   }
 
   // ========================================
-  // 화이트리스트 검증 메서드
+  // Whitelist validation methods
   // ========================================
 
   /**
-   * 필터 조건 검증
+   * Validate filter conditions
    *
-   * 허용된 필드 목록을 기반으로 필터 조건을 검증합니다.
-   * 중첩 필드의 경우 부모 필드가 허용되면 자식 필드도 허용됩니다.
+   * Validates filter conditions based on allowed field list.
+   * For nested fields, child fields are allowed if parent field is allowed.
    *
-   * @param filters 파싱된 필터 조건 배열
-   * @param allowed 허용된 필터 필드 목록
-   * @param onDisallowed 허용되지 않은 필터 처리 방식
-   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
-   * @param errors 에러 메시지를 추가할 배열 (error 모드)
-   * @returns 검증을 통과한 필터 조건 배열
+   * @param filters Parsed filter condition array
+   * @param allowed Allowed filter field list
+   * @param onDisallowed Handling method for disallowed filters
+   * @param warnings Array to add warning messages (ignore mode)
+   * @param errors Array to add error messages (error mode)
+   * @returns Filter condition array that passed validation
    */
   private validateFilters(
     filters: ParsedFilterCondition[],
@@ -541,16 +541,16 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 정렬 조건 검증
+   * Validate sort conditions
    *
-   * 허용된 필드 목록을 기반으로 정렬 조건을 검증합니다.
+   * Validates sort conditions based on allowed field list.
    *
-   * @param sorts 파싱된 정렬 조건 배열
-   * @param allowed 허용된 정렬 필드 목록
-   * @param onDisallowed 허용되지 않은 정렬 처리 방식
-   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
-   * @param errors 에러 메시지를 추가할 배열 (error 모드)
-   * @returns 검증을 통과한 정렬 조건 배열
+   * @param sorts Parsed sort condition array
+   * @param allowed Allowed sort field list
+   * @param onDisallowed Handling method for disallowed sorts
+   * @param warnings Array to add warning messages (ignore mode)
+   * @param errors Array to add error messages (error mode)
+   * @returns Sort condition array that passed validation
    */
   private validateSorts(
     sorts: { field: string; order: 'asc' | 'desc' }[],
@@ -576,18 +576,18 @@ export class JsonApiQueryService {
   }
 
   /**
-   * Include 관계 검증
+   * Validate include relationships
    *
-   * 허용된 관계 목록과 최대 깊이를 기반으로 include를 검증합니다.
-   * 부모 관계가 허용되면 자식 관계도 허용됩니다.
+   * Validates includes based on allowed relationship list and max depth.
+   * Child relationships are allowed if parent relationship is allowed.
    *
-   * @param includes 파싱된 include 배열
-   * @param allowed 허용된 include 관계 목록 (undefined면 깊이만 검증)
-   * @param maxDepth 최대 include 깊이 (undefined면 무제한)
-   * @param onDisallowed 허용되지 않은 include 처리 방식
-   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
-   * @param errors 에러 메시지를 추가할 배열 (error 모드)
-   * @returns 검증을 통과한 include 배열
+   * @param includes Parsed include array
+   * @param allowed Allowed include relationship list (undefined means only validate depth)
+   * @param maxDepth Maximum include depth (undefined means unlimited)
+   * @param onDisallowed Handling method for disallowed includes
+   * @param warnings Array to add warning messages (ignore mode)
+   * @param errors Array to add error messages (error mode)
+   * @returns Include array that passed validation
    */
   private validateIncludes(
     includes: string[],
@@ -598,7 +598,7 @@ export class JsonApiQueryService {
     errors: string[],
   ): string[] {
     return includes.filter((include) => {
-      // 깊이 체크
+      // Depth check
       if (maxDepth !== undefined) {
         const depth = include.split('.').length;
         if (depth > maxDepth) {
@@ -612,7 +612,7 @@ export class JsonApiQueryService {
         }
       }
 
-      // 허용 목록 체크
+      // Allowed list check
       if (allowed !== undefined) {
         const isAllowed = this.isIncludeAllowed(include, allowed);
         if (!isAllowed) {
@@ -631,17 +631,17 @@ export class JsonApiQueryService {
   }
 
   /**
-   * Sparse fieldsets 검증
+   * Validate sparse fieldsets
    *
-   * 타입별로 허용된 필드 목록을 기반으로 fields를 검증합니다.
-   * 특정 타입에 대한 설정이 없으면 해당 타입의 모든 필드를 허용합니다.
+   * Validates fields based on allowed field list per type.
+   * If no configuration exists for a specific type, all fields for that type are allowed.
    *
-   * @param fields 파싱된 fields 객체 (타입별 필드 배열)
-   * @param allowed 타입별 허용된 필드 목록
-   * @param onDisallowed 허용되지 않은 필드 처리 방식
-   * @param warnings 경고 메시지를 추가할 배열 (ignore 모드)
-   * @param errors 에러 메시지를 추가할 배열 (error 모드)
-   * @returns 검증을 통과한 fields 객체
+   * @param fields Parsed fields object (field array by type)
+   * @param allowed Allowed field list by type
+   * @param onDisallowed Handling method for disallowed fields
+   * @param warnings Array to add warning messages (ignore mode)
+   * @param errors Array to add error messages (error mode)
+   * @returns Fields object that passed validation
    */
   private validateFields(
     fields: Record<string, string[]>,
@@ -656,7 +656,7 @@ export class JsonApiQueryService {
       const allowedFields = allowed[type];
 
       if (!allowedFields) {
-        // 해당 타입에 대한 설정 없음 → 모두 허용
+        // No configuration for this type → allow all
         validated[type] = fieldList;
         continue;
       }
@@ -679,28 +679,28 @@ export class JsonApiQueryService {
   }
 
   /**
-   * 필드 허용 여부 확인 (중첩 필드 지원)
+   * Check if field is allowed (supports nested fields)
    *
-   * 중첩 필드의 경우 부모 필드가 허용되면 자식 필드도 허용됩니다.
+   * For nested fields, child fields are allowed if parent field is allowed.
    *
    * @example
    * ```typescript
    * // allowed: ['author', 'author.name', 'status']
-   * isFieldAllowed('author.name', allowed)   // true (정확히 일치)
-   * isFieldAllowed('author.email', allowed)  // true ('author'가 허용됨)
+   * isFieldAllowed('author.name', allowed)   // true (exact match)
+   * isFieldAllowed('author.email', allowed)  // true ('author' is allowed)
    * isFieldAllowed('comments.author', allowed) // false
    * ```
    *
-   * @param field 확인할 필드명
-   * @param allowed 허용된 필드 목록
-   * @returns 허용 여부
+   * @param field Field name to check
+   * @param allowed Allowed field list
+   * @returns Whether allowed
    */
   private isFieldAllowed(field: string, allowed: string[]): boolean {
-    // 정확히 일치
+    // Exact match
     if (allowed.includes(field)) return true;
 
-    // 중첩 필드: 부모 필드가 허용되면 자식도 허용
-    // 예: 'author'가 허용되면 'author.name', 'author.email' 등 모두 허용
+    // Nested field: child is allowed if parent is allowed
+    // e.g., if 'author' is allowed, 'author.name', 'author.email' etc. are all allowed
     const parts = field.split('.');
     for (let i = 1; i < parts.length; i++) {
       const parent = parts.slice(0, i).join('.');
@@ -711,27 +711,27 @@ export class JsonApiQueryService {
   }
 
   /**
-   * Include 허용 여부 확인 (중첩 관계 지원)
+   * Check if include is allowed (supports nested relationships)
    *
-   * 중첩 관계의 경우 부모 관계가 허용되면 자식 관계도 허용됩니다.
+   * For nested relationships, child relationships are allowed if parent is allowed.
    *
    * @example
    * ```typescript
    * // allowed: ['author', 'comments']
    * isIncludeAllowed('author', allowed)          // true
-   * isIncludeAllowed('author.profile', allowed)  // true (author가 허용됨)
+   * isIncludeAllowed('author.profile', allowed)  // true (author is allowed)
    * isIncludeAllowed('tags', allowed)            // false
    * ```
    *
-   * @param include 확인할 include 관계
-   * @param allowed 허용된 include 관계 목록
-   * @returns 허용 여부
+   * @param include Include relationship to check
+   * @param allowed Allowed include relationship list
+   * @returns Whether allowed
    */
   private isIncludeAllowed(include: string, allowed: string[]): boolean {
-    // 정확히 일치
+    // Exact match
     if (allowed.includes(include)) return true;
 
-    // 중첩: 부모가 허용되면 자식도 허용
+    // Nested: child is allowed if parent is allowed
     const parts = include.split('.');
     for (let i = 1; i < parts.length; i++) {
       const parent = parts.slice(0, i).join('.');

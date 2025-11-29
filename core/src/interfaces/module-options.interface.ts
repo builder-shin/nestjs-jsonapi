@@ -1,5 +1,5 @@
 /**
- * 모듈 설정 옵션 인터페이스 정의
+ * Module configuration options interface definition
  *
  * @packageDocumentation
  * @module interfaces
@@ -8,22 +8,22 @@
 import { ModuleMetadata, Provider, Type } from '@nestjs/common';
 
 /**
- * ID 타입 설정
+ * ID type configuration
  *
- * Prisma 모델의 ID 필드 타입에 따라 선택합니다.
+ * Select based on the ID field type of your Prisma model.
  *
- * - 'string': 문자열 ID (기본값)
- * - 'number': 숫자 ID (자동 변환)
- * - 'uuid': UUID 형식 검증
- * - 'cuid': CUID 형식 (v1, v2 모두 지원)
- * - 'auto': 타입 자동 감지
+ * - 'string': String ID (default)
+ * - 'number': Numeric ID (auto-conversion)
+ * - 'uuid': UUID format validation
+ * - 'cuid': CUID format (supports both v1 and v2)
+ * - 'auto': Auto-detect type
  */
 export type IdType = 'string' | 'number' | 'uuid' | 'cuid' | 'auto';
 
 /**
- * 모듈 전역 설정 옵션
+ * Module global configuration options
  *
- * JsonApiModule.forRoot()에 전달하는 설정 객체입니다.
+ * Configuration object passed to JsonApiModule.forRoot().
  *
  * @example
  * ```typescript
@@ -39,56 +39,56 @@ export type IdType = 'string' | 'number' | 'uuid' | 'cuid' | 'auto';
  */
 export interface JsonApiModuleOptions {
   /**
-   * 페이지네이션 설정 (필수)
+   * Pagination settings (required)
    */
   pagination: {
     /**
-     * 기본 페이지 크기
+     * Default page size
      */
     defaultLimit: number;
     /**
-     * 최대 페이지 크기
+     * Maximum page size
      */
     maxLimit: number;
   };
 
   /**
-   * 전역 기본 URL (선택)
+   * Global base URL (optional)
    * @example 'https://api.example.com'
    */
   baseUrl?: string;
 
   /**
-   * Prisma 서비스 주입 토큰 (선택)
-   * 클래스 타입, 문자열 토큰, 심볼 토큰 모두 지원합니다.
-   * @example PrismaService // 클래스 타입 권장
-   * @example 'PRISMA_SERVICE' // 문자열 토큰
+   * Prisma service injection token (optional)
+   * Supports class type, string token, or symbol token.
+   * @example PrismaService // Class type recommended
+   * @example 'PRISMA_SERVICE' // String token
    * @default 'PRISMA_SERVICE'
    */
   prismaServiceToken?: Type<unknown> | string | symbol;
 
   /**
-   * ID 타입 설정 (선택)
-   * - 'string': 문자열 ID (기본값)
-   * - 'number': 숫자 ID (자동 변환)
-   * - 'uuid': UUID 형식 검증
-   * - 'cuid': CUID 형식
-   * - 'auto': 타입 자동 감지
+   * ID type configuration (optional)
+   * - 'string': String ID (default)
+   * - 'number': Numeric ID (auto-conversion)
+   * - 'uuid': UUID format validation
+   * - 'cuid': CUID format
+   * - 'auto': Auto-detect type
    * @default 'string'
    */
   idType?: IdType;
 
   /**
-   * 디버그 모드 활성화 (선택)
+   * Enable debug mode (optional)
    * @default false
    */
   debug?: boolean;
 }
 
 /**
- * 비동기 모듈 설정 옵션
+ * Async module configuration options
  *
- * JsonApiModule.forRootAsync()에 전달하는 설정 객체입니다.
+ * Configuration object passed to JsonApiModule.forRootAsync().
  *
  * @example
  * ```typescript
@@ -107,27 +107,27 @@ export interface JsonApiModuleOptions {
 export interface JsonApiModuleAsyncOptions
   extends Pick<ModuleMetadata, 'imports'> {
   /**
-   * 옵션 팩토리 함수
+   * Options factory function
    */
   useFactory: (
     ...args: any[]
   ) => Promise<JsonApiModuleOptions> | JsonApiModuleOptions;
 
   /**
-   * 팩토리에 주입할 의존성
+   * Dependencies to inject into factory
    */
   inject?: any[];
 
   /**
-   * 추가 providers
+   * Additional providers
    */
   extraProviders?: Provider[];
 
   /**
-   * Prisma 서비스 주입 토큰 (선택)
-   * forRootAsync에서 직접 지정할 때 사용
-   * 클래스 타입, 문자열 토큰, 심볼 토큰 모두 지원합니다.
-   * @example PrismaService // 클래스 타입 권장
+   * Prisma service injection token (optional)
+   * Used when specifying directly in forRootAsync
+   * Supports class type, string token, or symbol token.
+   * @example PrismaService // Class type recommended
    * @default 'PRISMA_SERVICE'
    */
   prismaServiceToken?: Type<unknown> | string | symbol;

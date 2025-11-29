@@ -1,5 +1,5 @@
 /**
- * JSON:API Relationship 프로퍼티 데코레이터
+ * JSON:API Relationship Property Decorator
  *
  * @packageDocumentation
  * @module decorators
@@ -15,57 +15,57 @@ import { Type } from '@nestjs/common';
 import { JSON_API_RELATIONSHIPS } from '../constants';
 
 /**
- * Relationship 데코레이터 옵션
+ * Relationship decorator options
  */
 export interface RelationshipOptions {
   /**
-   * JSON:API 응답에서 사용할 관계명
-   * 미지정시 프로퍼티명을 kebab-case로 변환
+   * Relationship name to use in JSON:API response
+   * If not specified, property name is converted to kebab-case
    */
   name?: string;
 
   /**
-   * 관계 타입 (hasOne | hasMany)
-   * 미지정시 타입 추론으로 자동 결정
+   * Relationship type (hasOne | hasMany)
+   * If not specified, automatically determined by type inference
    */
   type?: 'hasOne' | 'hasMany';
 }
 
 /**
- * Relationship 메타데이터 (내부 저장용)
+ * Relationship metadata (for internal storage)
  */
 export interface RelationshipMetadata extends RelationshipOptions {
-  /** 원본 프로퍼티 키 */
+  /** Original property key */
   propertyKey: string;
-  /** 관련 Serializer를 반환하는 팩토리 함수 */
+  /** Factory function that returns the related Serializer */
   serializerFactory: () => Type<any>;
 }
 
 /**
- * JSON:API Relationship 데코레이터
+ * JSON:API Relationship Decorator
  *
- * 리소스 간의 관계(relationship)를 정의합니다.
- * 직렬화 시 JSON:API relationships 객체에 포함됩니다.
+ * Defines a relationship between resources.
+ * Included in the JSON:API relationships object during serialization.
  *
- * @param serializerFactory - 관계된 Serializer를 반환하는 팩토리 함수
- * @param options - 관계 옵션
+ * @param serializerFactory - Factory function that returns the related Serializer
+ * @param options - Relationship options
  * @returns PropertyDecorator
  *
  * @example
  * ```typescript
- * // To-One 관계
+ * // To-One relationship
  * @Relationship(() => UserSerializer)
  * author: UserSerializer;
  *
- * // To-Many 관계
+ * // To-Many relationship
  * @Relationship(() => CommentSerializer)
  * comments: CommentSerializer[];
  *
- * // 커스텀 관계명 지정
+ * // Custom relationship name specification
  * @Relationship(() => UserSerializer, { name: 'created-by' })
  * user: UserSerializer;
  *
- * // 명시적 관계 타입 지정
+ * // Explicit relationship type specification
  * @Relationship(() => TagSerializer, { type: 'hasMany' })
  * tags: TagSerializer[];
  * ```

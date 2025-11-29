@@ -1,67 +1,67 @@
 /**
- * ID 변환 유틸리티 함수
+ * ID Conversion Utility Functions
  *
  * @packageDocumentation
  * @module utils
  *
- * 의존성: interfaces (IdType)
+ * Dependencies: interfaces (IdType)
  */
 
 import { BadRequestException } from '@nestjs/common';
 import { IdType } from '../interfaces';
 
 /**
- * UUID v4 형식 정규식
+ * UUID v4 format regex
  */
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /**
- * CUID v1 형식 정규식
- * - 'c'로 시작하고 총 25자 (c + 24자)
+ * CUID v1 format regex
+ * - Starts with 'c' and total 25 characters (c + 24 chars)
  */
 const CUID_V1_REGEX = /^c[a-z0-9]{24}$/;
 
 /**
- * CUID v2 형식 정규식
- * - 소문자 알파벳과 숫자로 구성된 24자 (기본 길이)
- * - 첫 글자는 반드시 소문자 알파벳
+ * CUID v2 format regex
+ * - 24 lowercase letters and numbers (default length)
+ * - First character must be lowercase letter
  */
 const CUID_V2_REGEX = /^[a-z][a-z0-9]{23}$/;
 
 /**
- * CUID 검증 함수 (v1, v2 모두 지원)
+ * CUID validation function (supports both v1 and v2)
  *
- * @param id 검증할 ID 문자열
- * @returns CUID 형식 여부
+ * @param id ID string to validate
+ * @returns Whether it's CUID format
  */
 function isValidCuid(id: string): boolean {
   return CUID_V1_REGEX.test(id) || CUID_V2_REGEX.test(id);
 }
 
 /**
- * ID 타입에 따라 문자열 ID를 적절한 타입으로 변환
+ * Convert string ID to appropriate type based on ID type setting
  *
- * JSON:API에서는 ID가 항상 문자열로 전달되지만,
- * 데이터베이스에서는 다양한 타입을 사용할 수 있습니다.
- * 이 함수는 ID 타입 설정에 따라 적절한 변환을 수행합니다.
+ * In JSON:API, IDs are always passed as strings,
+ * but databases can use various types.
+ * This function performs appropriate conversion based on ID type setting.
  *
- * @param id 입력 ID (문자열)
- * @param idType ID 타입 설정
- * @returns 변환된 ID (string 또는 number)
- * @throws BadRequestException 유효하지 않은 ID 형식
+ * @param id Input ID (string)
+ * @param idType ID type setting
+ * @returns Converted ID (string or number)
+ * @throws BadRequestException for invalid ID format
  *
  * @example
  * ```typescript
- * // 숫자 ID
+ * // Number ID
  * convertId('123', 'number'); // 123
  *
  * // UUID
  * convertId('550e8400-e29b-41d4-a716-446655440000', 'uuid');
  *
- * // 자동 감지
- * convertId('123', 'auto'); // 123 (숫자로 변환)
- * convertId('abc123', 'auto'); // 'abc123' (문자열 유지)
+ * // Auto-detect
+ * convertId('123', 'auto'); // 123 (converted to number)
+ * convertId('abc123', 'auto'); // 'abc123' (kept as string)
  * ```
  */
 export function convertId(
@@ -120,20 +120,20 @@ export function convertId(
       return id;
 
     case 'auto': {
-      // 숫자로 변환 가능하면 숫자로
+      // Convert to number if possible
       const numId = Number(id);
       if (!Number.isNaN(numId) && Number.isInteger(numId) && numId > 0) {
         return numId;
       }
-      // UUID 형식이면 그대로
+      // Keep as is if UUID format
       if (UUID_REGEX.test(id)) {
         return id;
       }
-      // CUID 형식이면 그대로
+      // Keep as is if CUID format
       if (isValidCuid(id)) {
         return id;
       }
-      // 기본값으로 문자열 반환
+      // Return string as default
       return id;
     }
 
@@ -144,13 +144,13 @@ export function convertId(
 }
 
 /**
- * ID를 문자열로 변환 (직렬화용)
+ * Convert ID to string (for serialization)
  *
- * JSON:API 응답에서는 ID가 항상 문자열이어야 합니다.
- * 이 함수는 숫자 ID를 문자열로 변환합니다.
+ * In JSON:API responses, IDs must always be strings.
+ * This function converts numeric IDs to strings.
  *
- * @param id 입력 ID (string 또는 number)
- * @returns 문자열 ID
+ * @param id Input ID (string or number)
+ * @returns String ID
  *
  * @example
  * ```typescript
@@ -163,13 +163,13 @@ export function stringifyId(id: string | number): string {
 }
 
 /**
- * ID 배열 변환
+ * Convert ID array
  *
- * 여러 ID를 한 번에 변환할 때 사용합니다.
+ * Used to convert multiple IDs at once.
  *
- * @param ids ID 문자열 배열
- * @param idType ID 타입 설정
- * @returns 변환된 ID 배열
+ * @param ids ID string array
+ * @param idType ID type setting
+ * @returns Converted ID array
  *
  * @example
  * ```typescript

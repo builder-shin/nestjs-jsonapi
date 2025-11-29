@@ -1,5 +1,5 @@
 /**
- * 컨트롤러 옵션 및 액션 타입 정의
+ * Controller options and action type definitions
  *
  * @packageDocumentation
  * @module interfaces
@@ -9,7 +9,7 @@ import { Type } from '@nestjs/common';
 import { QueryWhitelistOptions } from './query-options.interface';
 
 /**
- * 기본 CRUD 액션 타입
+ * Default CRUD action types
  */
 export type CrudAction =
   | 'index'
@@ -24,7 +24,7 @@ export type CrudAction =
   | 'deleteMany';
 
 /**
- * 기본 CRUD 액션 목록
+ * Default CRUD action list
  */
 export const CRUD_ACTIONS: CrudAction[] = [
   'index',
@@ -40,28 +40,28 @@ export const CRUD_ACTIONS: CrudAction[] = [
 ];
 
 /**
- * 액션 타입 (기본 CRUD + 커스텀 액션)
+ * Action type (default CRUD + custom actions)
  *
- * 커스텀 액션은 문자열로 자유롭게 정의 가능합니다.
+ * Custom actions can be freely defined as strings.
  *
  * @example
  * ```typescript
- * // 기본 CRUD
+ * // Default CRUD
  * only: ['index', 'show', 'create']
  *
- * // 커스텀 액션 포함
+ * // Including custom actions
  * only: ['show', 'update', 'delete', 'publish', 'archive']
  * ```
  */
 export type ActionType = CrudAction | (string & {});
 
 /**
- * 컨트롤러 데코레이터 옵션
+ * Controller decorator options
  *
- * @JsonApiController 데코레이터에 전달하는 설정 객체입니다.
+ * Configuration object passed to @JsonApiController decorator.
  *
- * @template CreateDto - 생성 DTO 타입
- * @template UpdateDto - 수정 DTO 타입
+ * @template CreateDto - Create DTO type
+ * @template UpdateDto - Update DTO type
  *
  * @example
  * ```typescript
@@ -80,18 +80,18 @@ export type ActionType = CrudAction | (string & {});
  */
 export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
   /**
-   * Prisma 모델명 (소문자)
+   * Prisma model name (lowercase)
    * @example 'article'
    */
   model: string;
 
   /**
-   * Serializer 클래스
+   * Serializer class
    */
   serializer: Type<any>;
 
   /**
-   * DTO 클래스 설정
+   * DTO class configuration
    */
   dto?: {
     create?: Type<CreateDto>;
@@ -99,34 +99,34 @@ export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
   };
 
   /**
-   * 활성화할 액션 (only와 except 중 하나만 사용)
-   * 기본 CRUD + 커스텀 액션 모두 지정 가능
+   * Actions to enable (use either only or except, not both)
+   * Both default CRUD and custom actions can be specified
    */
   only?: ActionType[];
 
   /**
-   * 비활성화할 액션 (only와 except 중 하나만 사용)
+   * Actions to disable (use either only or except, not both)
    */
   except?: ActionType[];
 
   /**
-   * 리소스 타입명 (JSON:API type 필드)
-   * 미지정시 model을 복수형으로 변환하여 사용
+   * Resource type name (JSON:API type field)
+   * If not specified, model name will be pluralized
    * @example 'articles'
    */
   type?: string;
 
   /**
-   * 쿼리 파라미터 허용 목록 설정
+   * Query parameter whitelist settings
    *
-   * 필터, 정렬, include, fields 등의 쿼리 파라미터를 제한하여
-   * 보안과 성능을 강화합니다.
+   * Restricts filter, sort, include, fields query parameters
+   * to enhance security and performance.
    *
-   * 설정하지 않으면 모든 쿼리 파라미터가 허용됩니다 (하위 호환).
+   * If not configured, all query parameters are allowed (backward compatible).
    *
    * @example
    * ```typescript
-   * // 특정 필터/정렬/include만 허용
+   * // Allow only specific filters/sorts/includes
    * query: {
    *   allowedFilters: ['status', 'createdAt'],
    *   allowedSorts: ['createdAt', '-updatedAt'],
@@ -135,7 +135,7 @@ export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
    *   onDisallowed: 'error',
    * }
    *
-   * // 모든 쿼리 비활성화
+   * // Disable all queries
    * query: {
    *   allowedFilters: [],
    *   allowedSorts: [],
@@ -147,9 +147,9 @@ export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
 }
 
 /**
- * 액션 훅 옵션
+ * Action hook options
  *
- * @BeforeAction, @AfterAction 데코레이터에 전달하는 설정입니다.
+ * Configuration passed to @BeforeAction, @AfterAction decorators.
  *
  * @example
  * ```typescript
@@ -162,27 +162,27 @@ export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
  */
 export interface ActionHookOptions {
   /**
-   * 이 액션들에서만 실행
-   * 기본 CRUD + 커스텀 액션명 모두 사용 가능
+   * Run only for these actions
+   * Both default CRUD and custom action names can be used
    * @example only: ['show', 'update', 'delete', 'publish', 'archive']
    */
   only?: ActionType[];
 
   /**
-   * 이 액션들에서는 실행 안 함
+   * Do not run for these actions
    * @example except: ['index', 'show']
    */
   except?: ActionType[];
 }
 
 /**
- * 액션 훅 메타데이터
+ * Action hook metadata
  *
- * 내부적으로 훅 정보를 저장하는데 사용됩니다.
+ * Used internally to store hook information.
  */
 export interface ActionHookMetadata {
-  /** 훅이 적용된 메서드 이름 */
+  /** Method name where hook is applied */
   methodName: string;
-  /** 훅 옵션 */
+  /** Hook options */
   options: ActionHookOptions;
 }

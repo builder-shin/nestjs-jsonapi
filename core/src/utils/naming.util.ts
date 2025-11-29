@@ -1,22 +1,22 @@
 /**
- * 문자열 변환 유틸리티 함수
+ * String Conversion Utility Functions
  *
  * @packageDocumentation
  * @module utils
  *
  * @dependencies
- * - change-case-all: camelCase, kebabCase 변환 (CJS/ESM 호환)
- * - pluralize: 단수/복수 변환
+ * - change-case-all: camelCase, kebabCase conversion (CJS/ESM compatible)
+ * - pluralize: singular/plural conversion
  */
 
 import { camelCase, paramCase } from 'change-case-all';
 import pluralizeLib from 'pluralize';
 
 /**
- * camelCase를 kebab-case로 변환
+ * Convert camelCase to kebab-case
  *
- * @param str - 변환할 문자열
- * @returns kebab-case 문자열
+ * @param str - String to convert
+ * @returns kebab-case string
  *
  * @example
  * ```typescript
@@ -29,10 +29,10 @@ export function toKebabCase(str: string): string {
 }
 
 /**
- * kebab-case 또는 snake_case를 camelCase로 변환
+ * Convert kebab-case or snake_case to camelCase
  *
- * @param str - 변환할 문자열
- * @returns camelCase 문자열
+ * @param str - String to convert
+ * @returns camelCase string
  *
  * @example
  * ```typescript
@@ -46,10 +46,10 @@ export function toCamelCase(str: string): string {
 }
 
 /**
- * 단어를 복수형으로 변환
+ * Convert word to plural form
  *
- * @param word - 변환할 단어
- * @returns 복수형 단어
+ * @param word - Word to convert
+ * @returns Plural word
  *
  * @example
  * ```typescript
@@ -64,10 +64,10 @@ export function pluralize(word: string): string {
 }
 
 /**
- * 단어를 단수형으로 변환
+ * Convert word to singular form
  *
- * @param word - 변환할 단어
- * @returns 단수형 단어
+ * @param word - Word to convert
+ * @returns Singular word
  *
  * @example
  * ```typescript

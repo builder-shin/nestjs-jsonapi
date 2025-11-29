@@ -213,7 +213,7 @@ describe('JSON:API CRUD (e2e)', () => {
   });
 
   // ============================================
-  // Bulk 작업 테스트
+  // Bulk Operations Tests
   // ============================================
 
   describe('POST /articles/_bulk/create (createMany)', () => {
@@ -249,7 +249,7 @@ describe('JSON:API CRUD (e2e)', () => {
         .expect(201);
 
       expect(response.body).toHaveProperty('meta');
-      // createMany 액션은 meta.created를 반환 (serializeNull({ created: count }) 참조)
+      // createMany action returns meta.created (see serializeNull({ created: count }))
       expect(response.body.meta.created).toBe(3);
     });
 
@@ -275,7 +275,7 @@ describe('JSON:API CRUD (e2e)', () => {
     });
 
     it('should rollback all on partial failure (transaction)', async () => {
-      // 첫 번째 아이템은 유효, 두 번째는 무효 - 전체 롤백되어야 함
+      // First item is valid, second is invalid - entire transaction should rollback
       const countBefore = await request(app.getHttpServer())
         .get('/articles')
         .expect(200);
@@ -305,7 +305,7 @@ describe('JSON:API CRUD (e2e)', () => {
         })
         .expect(422);
 
-      // 롤백 확인: 개수가 변하지 않아야 함
+      // Verify rollback: count should not change
       const countAfter = await request(app.getHttpServer())
         .get('/articles')
         .expect(200);
@@ -316,7 +316,7 @@ describe('JSON:API CRUD (e2e)', () => {
 
   describe('PATCH /articles/_bulk/update (updateMany)', () => {
     it('should update multiple articles by filter', async () => {
-      // 먼저 테스트용 articles 생성
+      // First create test articles
       await request(app.getHttpServer())
         .post('/articles/_bulk/create')
         .set('Content-Type', 'application/vnd.api+json')
@@ -357,7 +357,7 @@ describe('JSON:API CRUD (e2e)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('meta');
-      // updateMany 액션은 meta.updated를 반환 (serializeNull({ updated: count }) 참조)
+      // updateMany action returns meta.updated (see serializeNull({ updated: count }))
       expect(response.body.meta.updated).toBeGreaterThanOrEqual(2);
     });
 
@@ -377,14 +377,14 @@ describe('JSON:API CRUD (e2e)', () => {
         })
         .expect(200);
 
-      // updateMany 액션은 meta.updated를 반환
+      // updateMany action returns meta.updated
       expect(response.body.meta.updated).toBe(0);
     });
   });
 
   describe('POST /articles/_bulk/delete (deleteMany)', () => {
     it('should delete multiple articles by filter', async () => {
-      // 먼저 삭제할 articles 생성
+      // First create articles to delete
       await request(app.getHttpServer())
         .post('/articles/_bulk/create')
         .set('Content-Type', 'application/vnd.api+json')
@@ -422,10 +422,10 @@ describe('JSON:API CRUD (e2e)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('meta');
-      // deleteMany 액션은 meta.deleted를 반환 (serializeNull({ deleted: count }) 참조)
+      // deleteMany action returns meta.deleted (see serializeNull({ deleted: count }))
       expect(response.body.meta.deleted).toBeGreaterThanOrEqual(2);
 
-      // 삭제 확인
+      // Verify deletion
       const remaining = await request(app.getHttpServer())
         .get('/articles?filter[status]=archived')
         .expect(200);
@@ -434,7 +434,7 @@ describe('JSON:API CRUD (e2e)', () => {
     });
 
     it('should use POST method (not DELETE) for body support', async () => {
-      // DELETE 메서드는 body를 지원하지 않을 수 있으므로 POST 사용
+      // Using POST because DELETE method may not support body
       const response = await request(app.getHttpServer())
         .post('/articles/_bulk/delete')
         .set('Content-Type', 'application/vnd.api+json')
@@ -447,7 +447,7 @@ describe('JSON:API CRUD (e2e)', () => {
         })
         .expect(200);
 
-      // deleteMany 액션은 meta.deleted를 반환
+      // deleteMany action returns meta.deleted
       expect(response.body.meta.deleted).toBe(0);
     });
   });
@@ -478,7 +478,7 @@ describe('JSON:API CRUD (e2e)', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('meta');
-      // upsertMany 액션은 meta.upserted를 반환 (serializeNull({ upserted: count }) 참조)
+      // upsertMany action returns meta.upserted (see serializeNull({ upserted: count }))
       expect(response.body.meta.upserted).toBe(2);
     });
   });

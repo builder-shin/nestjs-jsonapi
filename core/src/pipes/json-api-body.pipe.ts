@@ -1,12 +1,12 @@
 /**
- * JSON:API Body 변환/검증 파이프
+ * JSON:API Body Transform/Validation Pipe
  *
- * JSON:API 형식의 body에서 attributes와 relationships를 추출하고 DTO로 변환합니다.
+ * Extracts attributes and relationships from JSON:API format body and transforms to DTO.
  *
  * @packageDocumentation
  * @module pipes
  *
- * 의존성: exceptions/json-api-validation.exception.ts
+ * Dependencies: exceptions/json-api-validation.exception.ts
  */
 
 import {
@@ -20,23 +20,23 @@ import { validate } from 'class-validator';
 import { JsonApiValidationException } from '../exceptions';
 
 /**
- * JSON:API Body 변환/검증 파이프
+ * JSON:API Body Transform/Validation Pipe
  *
- * JSON:API 형식의 요청 body를 처리합니다:
- * 1. `data` 객체 존재 여부 검증
- * 2. `attributes` 추출
- * 3. `relationships`에서 관계 ID 추출
- * 4. 선택적으로 DTO 클래스로 변환 및 검증
+ * Processes JSON:API format request body:
+ * 1. Validates `data` object existence
+ * 2. Extracts `attributes`
+ * 3. Extracts relation IDs from `relationships`
+ * 4. Optionally transforms to DTO class and validates
  *
  * @example
  * ```typescript
- * // 컨트롤러에서 사용
+ * // Use in controller
  * @Post()
  * create(@Body(new JsonApiBodyPipe(CreateArticleDto)) data: CreateArticleDto) {
  *   return this.service.create(data);
  * }
  *
- * // DTO 없이 raw 데이터로 사용
+ * // Use with raw data without DTO
  * @Post()
  * create(@Body(new JsonApiBodyPipe()) data: Record<string, unknown>) {
  *   return this.service.create(data);
@@ -46,21 +46,21 @@ import { JsonApiValidationException } from '../exceptions';
 @Injectable()
 export class JsonApiBodyPipe implements PipeTransform {
   /**
-   * @param dtoClass 변환할 DTO 클래스 (선택적)
+   * @param dtoClass DTO class to transform to (optional)
    */
   constructor(private readonly dtoClass?: new () => any) {}
 
   /**
-   * JSON:API body를 변환
+   * Transform JSON:API body
    *
-   * @param value 원본 요청 body
-   * @param metadata 인자 메타데이터
-   * @returns 변환된 데이터 (DTO 인스턴스 또는 raw 객체)
-   * @throws BadRequestException - data 객체가 없는 경우
-   * @throws JsonApiValidationException - DTO 검증 실패 시
+   * @param value Original request body
+   * @param metadata Argument metadata
+   * @returns Transformed data (DTO instance or raw object)
+   * @throws BadRequestException - if data object is missing
+   * @throws JsonApiValidationException - if DTO validation fails
    */
   async transform(value: any, _metadata: ArgumentMetadata) {
-    // JSON:API body에서 data 추출
+    // Extract data from JSON:API body
     if (!value || !value.data) {
       throw new BadRequestException({
         errors: [
@@ -76,10 +76,10 @@ export class JsonApiBodyPipe implements PipeTransform {
 
     const { data } = value;
 
-    // attributes 추출
+    // Extract attributes
     const attributes = data.attributes || {};
 
-    // relationships에서 ID 추출
+    // Extract IDs from relationships
     const relationships = data.relationships || {};
     const relationData: Record<string, unknown> = {};
 
@@ -87,10 +87,10 @@ export class JsonApiBodyPipe implements PipeTransform {
       const relValue = rel as any;
       if (relValue?.data) {
         if (Array.isArray(relValue.data)) {
-          // To-Many 관계: `${key}Ids` 형식으로 ID 배열 추출
+          // To-Many relationship: extract ID array as `${key}Ids` format
           relationData[`${key}Ids`] = relValue.data.map((r: any) => r.id);
         } else {
-          // To-One 관계: `${key}Id` 형식으로 단일 ID 추출
+          // To-One relationship: extract single ID as `${key}Id` format
           relationData[`${key}Id`] = relValue.data.id;
         }
       }
@@ -98,17 +98,17 @@ export class JsonApiBodyPipe implements PipeTransform {
 
     const rawData = { ...attributes, ...relationData };
 
-    // DTO 클래스가 없으면 raw 데이터 반환
+    // Return raw data if no DTO class
     if (!this.dtoClass) {
       return rawData;
     }
 
-    // DTO 인스턴스로 변환
+    // Transform to DTO instance
     const dtoInstance = plainToInstance(this.dtoClass, rawData, {
       excludeExtraneousValues: false,
     });
 
-    // class-validator로 검증
+    // Validate with class-validator
     const errors = await validate(dtoInstance as object, {
       whitelist: true,
       forbidNonWhitelisted: false,

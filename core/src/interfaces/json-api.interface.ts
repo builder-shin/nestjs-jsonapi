@@ -1,5 +1,5 @@
 /**
- * JSON:API 1.1 스펙에 맞는 타입 정의
+ * Type definitions conforming to JSON:API 1.1 specification
  *
  * @packageDocumentation
  * @module interfaces
@@ -7,11 +7,11 @@
  */
 
 /**
- * JSON:API 1.1 Document 구조
+ * JSON:API 1.1 Document structure
  *
- * 모든 JSON:API 응답의 최상위 문서 구조를 정의합니다.
+ * Defines the top-level document structure for all JSON:API responses.
  *
- * @template T - 리소스의 attributes 타입
+ * @template T - Resource attributes type
  *
  * @example
  * ```typescript
@@ -23,26 +23,26 @@
  * ```
  */
 export interface JsonApiDocument<T = unknown> {
-  /** JSON:API 버전 정보 */
+  /** JSON:API version information */
   jsonapi: {
     version: '1.1';
   };
-  /** 응답 데이터 (단일, 배열, 또는 null) */
+  /** Response data (single, array, or null) */
   data: JsonApiResource<T> | JsonApiResource<T>[] | null;
-  /** 포함된 관련 리소스 */
+  /** Included related resources */
   included?: JsonApiResource[];
-  /** 메타 정보 */
+  /** Meta information */
   meta?: JsonApiMeta;
-  /** 링크 정보 */
+  /** Links information */
   links?: JsonApiLinks;
 }
 
 /**
  * JSON:API Resource Object
  *
- * 개별 리소스를 나타내는 객체입니다.
+ * Object representing an individual resource.
  *
- * @template T - attributes 타입
+ * @template T - Attributes type
  *
  * @example
  * ```typescript
@@ -57,33 +57,33 @@ export interface JsonApiDocument<T = unknown> {
  * ```
  */
 export interface JsonApiResource<T = unknown> {
-  /** 리소스 타입 (plural kebab-case) */
+  /** Resource type (plural kebab-case) */
   type: string;
-  /** 리소스 고유 식별자 */
+  /** Resource unique identifier */
   id: string;
-  /** 리소스 속성 */
+  /** Resource attributes */
   attributes?: Partial<T>;
-  /** 관계 정보 */
+  /** Relationship information */
   relationships?: Record<string, JsonApiRelationship>;
-  /** 링크 정보 */
+  /** Links information */
   links?: JsonApiLinks;
-  /** 메타 정보 */
+  /** Meta information */
   meta?: JsonApiMeta;
 }
 
 /**
  * JSON:API Relationship
  *
- * 리소스 간의 관계를 나타내는 객체입니다.
+ * Object representing relationships between resources.
  *
  * @example
  * ```typescript
- * // To-One 관계
+ * // To-One relationship
  * const author: JsonApiRelationship = {
  *   data: { type: 'users', id: '5' }
  * };
  *
- * // To-Many 관계
+ * // To-Many relationship
  * const comments: JsonApiRelationship = {
  *   data: [
  *     { type: 'comments', id: '1' },
@@ -93,50 +93,50 @@ export interface JsonApiResource<T = unknown> {
  * ```
  */
 export interface JsonApiRelationship {
-  /** 관계 데이터 (식별자 또는 식별자 배열) */
+  /** Relationship data (identifier or array of identifiers) */
   data: JsonApiResourceIdentifier | JsonApiResourceIdentifier[] | null;
-  /** 링크 정보 */
+  /** Links information */
   links?: JsonApiLinks;
-  /** 메타 정보 */
+  /** Meta information */
   meta?: JsonApiMeta;
 }
 
 /**
  * JSON:API Resource Identifier
  *
- * 리소스를 식별하기 위한 최소 정보 (type + id)
+ * Minimum information to identify a resource (type + id)
  */
 export interface JsonApiResourceIdentifier {
-  /** 리소스 타입 */
+  /** Resource type */
   type: string;
-  /** 리소스 ID */
+  /** Resource ID */
   id: string;
 }
 
 /**
  * JSON:API Links
  *
- * 관련 URL 링크 모음
+ * Collection of related URL links
  */
 export interface JsonApiLinks {
-  /** 현재 리소스 URL */
+  /** Current resource URL */
   self?: string;
-  /** 관련 리소스 URL */
+  /** Related resource URL */
   related?: string;
-  /** 첫 번째 페이지 URL */
+  /** First page URL */
   first?: string;
-  /** 마지막 페이지 URL */
+  /** Last page URL */
   last?: string;
-  /** 이전 페이지 URL (없으면 null) */
+  /** Previous page URL (null if none) */
   prev?: string | null;
-  /** 다음 페이지 URL (없으면 null) */
+  /** Next page URL (null if none) */
   next?: string | null;
 }
 
 /**
  * JSON:API Meta
  *
- * 비표준 메타 정보를 담는 객체
+ * Object containing non-standard meta information
  */
 export interface JsonApiMeta {
   [key: string]: unknown;
@@ -145,7 +145,7 @@ export interface JsonApiMeta {
 /**
  * JSON:API Error Object
  *
- * 에러 정보를 나타내는 객체입니다.
+ * Object representing error information.
  *
  * @example
  * ```typescript
@@ -160,51 +160,51 @@ export interface JsonApiMeta {
  * ```
  */
 export interface JsonApiError {
-  /** 고유 에러 ID */
+  /** Unique error ID */
   id?: string;
-  /** HTTP 상태 코드 (문자열) */
+  /** HTTP status code (as string) */
   status?: string;
-  /** 애플리케이션별 에러 코드 */
+  /** Application-specific error code */
   code?: string;
-  /** 짧은 에러 제목 */
+  /** Short error title */
   title?: string;
-  /** 상세 에러 설명 */
+  /** Detailed error description */
   detail?: string;
-  /** 에러 발생 위치 */
+  /** Error source location */
   source?: {
     /** JSON Pointer to the value in request document */
     pointer?: string;
-    /** 문제가 된 쿼리 파라미터 이름 */
+    /** Query parameter name that caused the issue */
     parameter?: string;
-    /** 문제가 된 헤더 이름 */
+    /** Header name that caused the issue */
     header?: string;
   };
-  /** 메타 정보 */
+  /** Meta information */
   meta?: JsonApiMeta;
 }
 
 /**
  * JSON:API Error Document
  *
- * 에러 응답의 최상위 문서 구조입니다.
+ * Top-level document structure for error responses.
  */
 export interface JsonApiErrorDocument {
-  /** JSON:API 버전 정보 */
+  /** JSON:API version information */
   jsonapi: {
     version: '1.1';
   };
-  /** 에러 목록 */
+  /** Error list */
   errors: JsonApiError[];
-  /** 메타 정보 */
+  /** Meta information */
   meta?: JsonApiMeta;
 }
 
 /**
  * JSON:API Request Body (Create/Update)
  *
- * 리소스 생성/수정 요청 본문 구조입니다.
+ * Request body structure for resource creation/modification.
  *
- * @template T - attributes 타입
+ * @template T - Attributes type
  *
  * @example
  * ```typescript
@@ -218,13 +218,13 @@ export interface JsonApiErrorDocument {
  */
 export interface JsonApiRequestBody<T = unknown> {
   data: {
-    /** 리소스 타입 */
+    /** Resource type */
     type: string;
-    /** 리소스 ID (업데이트 시 필수, 생성 시 선택) */
+    /** Resource ID (required for update, optional for create) */
     id?: string;
-    /** 리소스 속성 */
+    /** Resource attributes */
     attributes?: Partial<T>;
-    /** 관계 정보 */
+    /** Relationship information */
     relationships?: Record<string, JsonApiRelationship>;
   };
 }
@@ -232,19 +232,19 @@ export interface JsonApiRequestBody<T = unknown> {
 /**
  * JSON:API Bulk Request Body
  *
- * 복수 리소스 생성/수정 요청 본문 구조입니다.
+ * Request body structure for bulk resource creation/modification.
  *
- * @template T - attributes 타입
+ * @template T - Attributes type
  */
 export interface JsonApiBulkRequestBody<T = unknown> {
   data: Array<{
-    /** 리소스 타입 */
+    /** Resource type */
     type: string;
-    /** 리소스 ID (업데이트 시 필수) */
+    /** Resource ID (required for update) */
     id?: string;
-    /** 리소스 속성 */
+    /** Resource attributes */
     attributes?: Partial<T>;
-    /** 관계 정보 */
+    /** Relationship information */
     relationships?: Record<string, JsonApiRelationship>;
   }>;
 }

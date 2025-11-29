@@ -4,8 +4,8 @@ import { PrismaService } from './prisma.service';
 /**
  * Mock Prisma Module (Global)
  *
- * 테스트용 PrismaService를 전역으로 제공합니다.
- * JsonApiModule이 'PRISMA_SERVICE' 토큰에 접근할 수 있도록 합니다.
+ * Provides PrismaService globally for testing.
+ * Allows JsonApiModule to access the 'PRISMA_SERVICE' token.
  */
 @Global()
 @Module({

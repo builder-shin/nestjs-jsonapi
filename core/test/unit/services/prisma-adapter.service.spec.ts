@@ -91,8 +91,8 @@ describe('PrismaAdapterService', () => {
       const mockData = { id: '1', title: 'New Article', content: 'Content' };
       mockPrisma.article.create.mockResolvedValue(mockData);
 
-      // 서비스의 create 메서드 시그니처: create(model, data, include?)
-      // data 파라미터는 직접 데이터 객체 (Prisma의 data 필드에 들어갈 내용)
+      // Service create method signature: create(model, data, include?)
+      // data parameter is the direct data object (content that goes into Prisma's data field)
       const result = await service.create('article', {
         title: 'New Article',
         content: 'Content',
@@ -111,7 +111,7 @@ describe('PrismaAdapterService', () => {
       const mockData = { id: '1', title: 'Updated Title' };
       mockPrisma.article.update.mockResolvedValue(mockData);
 
-      // 서비스의 update 메서드 시그니처: update(model, where, data, include?)
+      // Service update method signature: update(model, where, data, include?)
       const result = await service.update(
         'article',
         { id: '1' },
@@ -132,7 +132,7 @@ describe('PrismaAdapterService', () => {
       const mockData = { id: '1', title: 'Deleted Article' };
       mockPrisma.article.delete.mockResolvedValue(mockData);
 
-      // 서비스의 delete 메서드 시그니처: delete(model, where)
+      // Service delete method signature: delete(model, where)
       const result = await service.delete('article', { id: '1' });
 
       expect(mockPrisma.article.delete).toHaveBeenCalledWith({

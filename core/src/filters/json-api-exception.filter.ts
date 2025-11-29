@@ -1,12 +1,12 @@
 /**
- * JSON:API 예외 필터
+ * JSON:API Exception Filter
  *
- * 모든 예외를 JSON:API Error 형식으로 변환합니다.
+ * Converts all exceptions to JSON:API Error format.
  *
  * @packageDocumentation
  * @module filters
  *
- * 의존성: interfaces/json-api.interface.ts, exceptions/json-api-validation.exception.ts, utils/error.util.ts
+ * Dependencies: interfaces/json-api.interface.ts, exceptions/json-api-validation.exception.ts, utils/error.util.ts
  */
 
 import {
@@ -22,12 +22,12 @@ import { JsonApiValidationException } from '../exceptions';
 import { generateErrorId } from '../utils';
 
 /**
- * JSON:API 표준 미디어 타입
+ * JSON:API standard media type
  */
 const JSON_API_CONTENT_TYPE = 'application/vnd.api+json';
 
 /**
- * HTTP 상태 코드에 대응하는 제목 매핑
+ * HTTP status code to title mapping
  */
 const HTTP_STATUS_TITLES: Record<number, string> = {
   400: 'Bad Request',
@@ -45,19 +45,19 @@ const HTTP_STATUS_TITLES: Record<number, string> = {
 };
 
 /**
- * JSON:API 예외 필터
+ * JSON:API Exception Filter
  *
- * 모든 예외를 JSON:API 1.1 Error 형식으로 변환합니다:
- * - JsonApiValidationException: 이미 형식화된 에러 사용
- * - HttpException: 응답 객체에서 에러 추출
- * - 일반 Error: 500 Internal Server Error로 변환
+ * Converts all exceptions to JSON:API 1.1 Error format:
+ * - JsonApiValidationException: Uses already formatted errors
+ * - HttpException: Extracts errors from response object
+ * - General Error: Converts to 500 Internal Server Error
  *
  * @example
  * ```typescript
- * // 전역 필터로 등록
+ * // Register as global filter
  * app.useGlobalFilters(new JsonApiExceptionFilter());
  *
- * // 컨트롤러 레벨에서 사용
+ * // Use at controller level
  * @UseFilters(JsonApiExceptionFilter)
  * @Controller('articles')
  * export class ArticleController {}
@@ -66,10 +66,10 @@ const HTTP_STATUS_TITLES: Record<number, string> = {
 @Catch()
 export class JsonApiExceptionFilter implements ExceptionFilter {
   /**
-   * 예외 처리
+   * Handle exception
    *
-   * @param exception 발생한 예외
-   * @param host 인자 호스트
+   * @param exception Thrown exception
+   * @param host Arguments host
    */
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -79,7 +79,7 @@ export class JsonApiExceptionFilter implements ExceptionFilter {
     let errors: JsonApiError[] = [];
 
     if (exception instanceof JsonApiValidationException) {
-      // JsonApiValidationException은 이미 형식화된 에러 보유
+      // JsonApiValidationException already has formatted errors
       status = HttpStatus.BAD_REQUEST;
       errors = exception.jsonApiErrors;
     } else if (exception instanceof HttpException) {
@@ -89,11 +89,11 @@ export class JsonApiExceptionFilter implements ExceptionFilter {
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const resp = exceptionResponse as Record<string, any>;
 
-        // 이미 JSON:API 형식인 경우
+        // Already in JSON:API format
         if (Array.isArray(resp.errors)) {
           errors = resp.errors;
         }
-        // class-validator 에러 처리 (ValidationPipe에서 발생)
+        // Handle class-validator errors (from ValidationPipe)
         else if (Array.isArray(resp.message)) {
           errors = resp.message.map((msg: string) => ({
             id: generateErrorId(),
@@ -156,10 +156,10 @@ export class JsonApiExceptionFilter implements ExceptionFilter {
   }
 
   /**
-   * HTTP 상태 코드에 대응하는 제목 반환
+   * Get title corresponding to HTTP status code
    *
-   * @param status HTTP 상태 코드
-   * @returns 상태 제목
+   * @param status HTTP status code
+   * @returns Status title
    */
   private getHttpStatusTitle(status: number): string {
     return HTTP_STATUS_TITLES[status] || 'Error';

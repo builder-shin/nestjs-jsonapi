@@ -1,20 +1,20 @@
 /**
- * JSON:API CRUD 베이스 컨트롤러
+ * JSON:API CRUD Base Controller
  *
  * @packageDocumentation
  * @module controllers
  *
- * 의존성:
- * - @nestjs/common: HTTP 데코레이터, 예외 클래스
- * - express: Request 타입
- * - class-transformer: DTO 변환
- * - class-validator: DTO 검증
- * - reflect-metadata: 메타데이터 처리
+ * Dependencies:
+ * - @nestjs/common: HTTP decorators, exception classes
+ * - express: Request type
+ * - class-transformer: DTO transformation
+ * - class-validator: DTO validation
+ * - reflect-metadata: Metadata handling
  * - services/*: PrismaAdapter, QueryService, SerializerService
- * - interfaces/*: JSON:API, 컨트롤러 옵션 타입
- * - exceptions/*: 검증 예외
- * - constants/*: 메타데이터 상수
- * - utils/*: 네이밍, ID 변환
+ * - interfaces/*: JSON:API, controller options types
+ * - exceptions/*: Validation exceptions
+ * - constants/*: Metadata constants
+ * - utils/*: Naming, ID conversion
  */
 
 import {
@@ -67,21 +67,21 @@ import {
 import { pluralize, convertId } from "../utils";
 
 /**
- * JSON:API CRUD 베이스 컨트롤러
+ * JSON:API CRUD Base Controller
  *
- * Rails 스타일의 @model 패턴과 before_action/after_action을 지원합니다.
+ * Supports Rails-style @model pattern and before_action/after_action.
  *
- * 주요 기능:
- * - this.model: DTO로 필터링되고 검증된 엔티티 인스턴스
- * - this.record: DB에서 조회된 원본 레코드
- * - @BeforeAction/@AfterAction: Rails 스타일 훅 데코레이터
- * - beforeCreate/afterCreate 등: 오버라이드 가능한 개별 훅
+ * Main features:
+ * - this.model: Entity instance filtered and validated through DTO
+ * - this.record: Original record retrieved from DB
+ * - @BeforeAction/@AfterAction: Rails-style hook decorators
+ * - beforeCreate/afterCreate etc.: Overridable individual hooks
  *
- * ## 서비스 주입 패턴
+ * ## Service Injection Pattern
  *
- * NestJS DI 컨테이너는 abstract class의 의존성을 자동 주입하지 않습니다.
- * 따라서 하위 클래스에서 constructor를 통해 서비스를 주입받고,
- * protected getter를 구현해야 합니다.
+ * NestJS DI container does not auto-inject dependencies for abstract classes.
+ * Therefore, subclasses must inject services through constructor
+ * and implement protected getters.
  *
  * @example
  * ```typescript
@@ -101,7 +101,7 @@ import { pluralize, convertId } from "../utils";
  *     super();
  *   }
  *
- *   // 필수: abstract getter 구현
+ *   // Required: implement abstract getters
  *   protected get prismaAdapter() { return this._prismaAdapter; }
  *   protected get queryService() { return this._queryService; }
  *   protected get serializerService() { return this._serializerService; }
@@ -120,16 +120,16 @@ import { pluralize, convertId } from "../utils";
  */
 export abstract class JsonApiCrudController {
   /**
-   * Prisma 어댑터 서비스
+   * Prisma Adapter Service
    *
-   * NestJS DI 제한사항:
-   * abstract class는 DI 컨테이너에서 직접 주입을 받을 수 없습니다.
-   * 하위 클래스에서 constructor를 통해 서비스를 주입받고,
-   * 이 getter를 구현하여 베이스 클래스에 제공해야 합니다.
+   * NestJS DI Limitation:
+   * Abstract classes cannot receive direct injection from DI container.
+   * Subclasses must inject services through constructor
+   * and implement this getter to provide to the base class.
    *
    * @example
    * ```typescript
-   * // 하위 클래스에서 구현 (필수)
+   * // Implement in subclass (required)
    * constructor(
    *   private readonly _prismaAdapter: PrismaAdapterService,
    *   private readonly _queryService: JsonApiQueryService,
@@ -146,24 +146,24 @@ export abstract class JsonApiCrudController {
   protected abstract get prismaAdapter(): PrismaAdapterService;
 
   /**
-   * 쿼리 서비스
+   * Query Service
    *
-   * @see prismaAdapter getter 설명 참조 - 동일한 주입 패턴 적용
+   * @see prismaAdapter getter description - same injection pattern applies
    */
   protected abstract get queryService(): JsonApiQueryService;
 
   /**
-   * 직렬화 서비스
+   * Serializer Service
    *
-   * @see prismaAdapter getter 설명 참조 - 동일한 주입 패턴 적용
+   * @see prismaAdapter getter description - same injection pattern applies
    */
   protected abstract get serializerService(): JsonApiSerializerService;
 
   /**
-   * 모듈 옵션 (선택적)
+   * Module Options (optional)
    *
-   * ID 타입 변환, 디버그 모드 등 모듈 수준 설정이 필요한 경우 구현합니다.
-   * 기본값은 undefined를 반환하며, 필요시 하위 클래스에서 오버라이드합니다.
+   * Implement when module-level settings like ID type conversion or debug mode are needed.
+   * Returns undefined by default, override in subclass when needed.
    *
    * @example
    * ```typescript
@@ -180,13 +180,13 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * 디버그 로거
+   * Debug Logger
    */
   protected readonly logger = new Logger(this.constructor.name);
 
   /**
-   * 컨트롤러 옵션
-   * @JsonApiController 데코레이터 또는 직접 정의
+   * Controller Options
+   * @JsonApiController decorator or direct definition
    */
   protected get options(): JsonApiControllerOptions {
     return (
@@ -195,52 +195,52 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * 디버그 모드 활성화 여부
+   * Whether debug mode is enabled
    */
   protected get isDebugMode(): boolean {
     return this.moduleOptions?.debug ?? false;
   }
 
   /**
-   * 현재 작업 중인 모델 인스턴스
-   * - DTO를 통해 허용된 필드만 필터링됨
-   * - class-validator로 검증 완료된 상태
-   * - 라이프사이클 훅에서 수정 가능
+   * Current working model instance
+   * - Filtered to only allowed fields through DTO
+   * - Validated with class-validator
+   * - Can be modified in lifecycle hooks
    */
   protected model: Record<string, unknown> = {};
 
   /**
-   * 현재 조회/수정/삭제 대상 레코드 (DB에서 조회된 원본)
-   * - show, update, delete 액션에서 사용 가능
-   * - create 액션에서는 null
+   * Current target record for show/update/delete (original from DB)
+   * - Available in show, update, delete actions
+   * - null in create action
    */
   protected record: Record<string, unknown> | null = null;
 
   /**
-   * 현재 요청 객체
+   * Current request object
    */
   protected request!: Request;
 
   /**
-   * 파싱된 쿼리 파라미터
+   * Parsed query parameters
    */
   protected parsedQuery!: ParsedQuery;
 
   /**
-   * 현재 실행 중인 액션명
-   * 기본 CRUD: 'index', 'show', 'create', 'update', 'delete' 등
-   * 커스텀: 'publish', 'archive' 등
+   * Currently executing action name
+   * Default CRUD: 'index', 'show', 'create', 'update', 'delete', etc.
+   * Custom: 'publish', 'archive', etc.
    */
   protected currentAction: string = "";
 
   // ============================================
-  // 유틸리티 메서드
+  // Utility Methods
   // ============================================
 
   /**
-   * ID를 모듈 설정에 맞게 변환
-   * @param id 문자열 ID
-   * @returns 변환된 ID (string 또는 number)
+   * Convert ID according to module settings
+   * @param id String ID
+   * @returns Converted ID (string or number)
    */
   protected convertIdByConfig(id: string): string | number {
     const idType = this.moduleOptions?.idType ?? "string";
@@ -248,8 +248,8 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * 디버그 로그 출력
-   * debug 옵션이 활성화된 경우에만 출력
+   * Output debug log
+   * Only outputs when debug option is enabled
    */
   protected debugLog(message: string, context?: Record<string, unknown>): void {
     if (this.isDebugMode) {
@@ -258,47 +258,47 @@ export abstract class JsonApiCrudController {
   }
 
   // ============================================
-  // 액션 실행 및 훅 시스템
+  // Action Execution and Hook System
   // ============================================
 
   /**
-   * 액션 실행 래퍼
+   * Action Execution Wrapper
    *
-   * 액션 실행 전후에 @BeforeAction/@AfterAction 훅들을 자동으로 실행합니다.
-   * 기본 CRUD 액션(index, show, create, update, delete)은 물론
-   * @JsonApiAction으로 등록한 커스텀 액션에서도 동일하게 동작합니다.
+   * Automatically executes @BeforeAction/@AfterAction hooks before and after action execution.
+   * Works the same for default CRUD actions (index, show, create, update, delete)
+   * as well as custom actions registered with @JsonApiAction.
    *
-   * ## 실행 순서
-   * 1. this.currentAction에 액션명 설정
-   * 2. @BeforeAction 훅들 실행 (only/except 조건 확인)
-   * 3. handler 실행 (실제 비즈니스 로직)
-   * 4. @AfterAction 훅들 실행 (only/except 조건 확인)
+   * ## Execution Order
+   * 1. Set action name in this.currentAction
+   * 2. Execute @BeforeAction hooks (check only/except conditions)
+   * 3. Execute handler (actual business logic)
+   * 4. Execute @AfterAction hooks (check only/except conditions)
    *
-   * ## 커스텀 액션에서 사용
+   * ## Usage in Custom Actions
    * ```typescript
    * @Post(':id/publish')
    * @JsonApiAction('publish')
    * async publish(@Param('id') id: string) {
    *   return this.executeAction('publish', async () => {
-   *     // @BeforeAction('loadRecord', { only: ['publish'] }) 실행됨
-   *     // @BeforeAction('authenticate') 실행됨 (only/except 없으면 항상 실행)
+   *     // @BeforeAction('loadRecord', { only: ['publish'] }) executes
+   *     // @BeforeAction('authenticate') executes (always if no only/except)
    *
    *     const updated = await this.prismaAdapter.update(...);
    *     return this.serializerService.serialize(...);
    *
-   *     // @AfterAction('logActivity', { except: ['index'] }) 실행됨
+   *     // @AfterAction('logActivity', { except: ['index'] }) executes
    *   });
    * }
    * ```
    *
-   * @param action 액션명 (기본 CRUD: 'index', 'show', 'create', 'update', 'delete'
-   *               또는 커스텀: 'publish', 'archive' 등)
-   * @param handler 실제 액션 로직을 수행하는 비동기 함수
-   * @returns handler의 반환값
+   * @param action Action name (default CRUD: 'index', 'show', 'create', 'update', 'delete'
+   *               or custom: 'publish', 'archive', etc.)
+   * @param handler Async function that performs the actual action logic
+   * @returns Return value of handler
    *
-   * @see JsonApiAction - 커스텀 액션 등록 데코레이터
-   * @see BeforeAction - 액션 실행 전 훅
-   * @see AfterAction - 액션 실행 후 훅
+   * @see JsonApiAction - Custom action registration decorator
+   * @see BeforeAction - Pre-action hook
+   * @see AfterAction - Post-action hook
    */
   protected async executeAction<T>(
     action: string,
@@ -306,20 +306,20 @@ export abstract class JsonApiCrudController {
   ): Promise<T> {
     this.currentAction = action;
 
-    // @BeforeAction 훅들 실행
+    // Execute @BeforeAction hooks
     await this.runBeforeActionHooks();
 
-    // 실제 액션 실행
+    // Execute actual action
     const result = await handler();
 
-    // @AfterAction 훅들 실행
+    // Execute @AfterAction hooks
     await this.runAfterActionHooks();
 
     return result;
   }
 
   /**
-   * @BeforeAction 훅들 실행
+   * Execute @BeforeAction hooks
    */
   private async runBeforeActionHooks(): Promise<void> {
     const hooks: ActionHookMetadata[] =
@@ -336,7 +336,7 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * @AfterAction 훅들 실행
+   * Execute @AfterAction hooks
    */
   private async runAfterActionHooks(): Promise<void> {
     const hooks: ActionHookMetadata[] =
@@ -353,29 +353,29 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * 훅 실행 여부 판단
+   * Determine whether to execute hook
    *
-   * @BeforeAction/@AfterAction의 only/except 옵션을 평가하여
-   * 해당 훅이 현재 액션에서 실행되어야 하는지 결정합니다.
+   * Evaluates @BeforeAction/@AfterAction's only/except options
+   * to determine if the hook should run for the current action.
    *
-   * ## only/except 동작 규칙
-   * 1. only가 지정된 경우: 액션이 only 배열에 포함되어야 실행
-   * 2. except가 지정된 경우: 액션이 except 배열에 포함되지 않아야 실행
-   * 3. 둘 다 없는 경우: 모든 액션에서 실행
-   * 4. only와 except 둘 다 지정된 경우: only가 우선 적용
+   * ## only/except behavior rules
+   * 1. If only is specified: Execute only if action is in the only array
+   * 2. If except is specified: Execute only if action is NOT in the except array
+   * 3. If neither is specified: Execute for all actions
+   * 4. If both are specified: only takes precedence
    *
-   * ## 커스텀 액션 지원
-   * only/except 배열에는 기본 CRUD 액션과 @JsonApiAction으로
-   * 등록한 커스텀 액션 모두 사용할 수 있습니다.
+   * ## Custom action support
+   * Both default CRUD actions and custom actions registered with @JsonApiAction
+   * can be used in only/except arrays.
    *
    * @example
-   * // 기본 CRUD + 커스텀 액션 혼합 사용
+   * // Mixed use of default CRUD + custom actions
    * { only: ['show', 'update', 'delete', 'publish', 'archive'] }
-   * { except: ['index', 'show'] } // create, update, delete, publish 등에서 실행
+   * { except: ['index', 'show'] } // Executes for create, update, delete, publish, etc.
    *
-   * @param options 훅 옵션 (only/except 포함)
-   * @param action 현재 실행 중인 액션명
-   * @returns 훅 실행 여부
+   * @param options Hook options (including only/except)
+   * @param action Currently executing action name
+   * @returns Whether to execute the hook
    */
   private shouldRunHook(options: ActionHookOptions, action: string): boolean {
     if (options.only && options.only.length > 0) {
@@ -384,21 +384,21 @@ export abstract class JsonApiCrudController {
     if (options.except && options.except.length > 0) {
       return !options.except.includes(action);
     }
-    return true; // only/except 없으면 항상 실행
+    return true; // Execute always if no only/except
   }
 
   /**
-   * 액션 활성화 여부 확인
+   * Check if action is enabled
    *
-   * @JsonApiController의 only/except 옵션을 평가하여
-   * 해당 기본 CRUD 액션이 활성화되어 있는지 확인합니다.
+   * Evaluates @JsonApiController's only/except options
+   * to check if the default CRUD action is enabled.
    *
-   * 참고: 이 메서드는 기본 CRUD 액션에만 적용됩니다.
-   * 커스텀 액션(@JsonApiAction으로 정의)은 별도 라우트로 정의되므로
-   * 이 메서드의 영향을 받지 않습니다.
+   * Note: This method only applies to default CRUD actions.
+   * Custom actions (defined with @JsonApiAction) are defined as separate routes
+   * and are not affected by this method.
    *
-   * @param action 확인할 액션명
-   * @returns 액션 활성화 여부
+   * @param action Action name to check
+   * @returns Whether the action is enabled
    */
   protected isActionEnabled(action: string): boolean {
     const { only, except } = this.options;
@@ -413,62 +413,62 @@ export abstract class JsonApiCrudController {
   }
 
   // ============================================
-  // 개별 라이프사이클 훅 - 오버라이드하여 사용
+  // Individual Lifecycle Hooks - Override to use
   // ============================================
 
-  /** index 액션 전 훅 */
+  /** Pre-index action hook */
   protected async beforeIndex(): Promise<void> {}
-  /** index 액션 후 훅 */
+  /** Post-index action hook */
   protected async afterIndex(_records: any[]): Promise<void> {}
-  /** show 액션 전 훅 (레코드 조회 후) */
+  /** Pre-show action hook (after record retrieval) */
   protected async beforeShow(): Promise<void> {}
-  /** show 액션 후 훅 */
+  /** Post-show action hook */
   protected async afterShow(): Promise<void> {}
-  /** create 액션 전 훅 (모델 빌드 후, DB 저장 전) */
+  /** Pre-create action hook (after model build, before DB save) */
   protected async beforeCreate(): Promise<void> {}
-  /** create 액션 후 훅 (DB 저장 후) */
+  /** Post-create action hook (after DB save) */
   protected async afterCreate(): Promise<void> {}
-  /** update 액션 전 훅 (모델 빌드 후, DB 저장 전) */
+  /** Pre-update action hook (after model build, before DB save) */
   protected async beforeUpdate(): Promise<void> {}
-  /** update 액션 후 훅 (DB 저장 후) */
+  /** Post-update action hook (after DB save) */
   protected async afterUpdate(): Promise<void> {}
-  /** delete 액션 전 훅 (레코드 조회 후, 삭제 전) */
+  /** Pre-delete action hook (after record retrieval, before deletion) */
   protected async beforeDelete(): Promise<void> {}
-  /** delete 액션 후 훅 (삭제 후) */
+  /** Post-delete action hook (after deletion) */
   protected async afterDelete(): Promise<void> {}
-  /** upsert 액션 전 훅 */
+  /** Pre-upsert action hook */
   protected async beforeUpsert(): Promise<void> {}
-  /** upsert 액션 후 훅 */
+  /** Post-upsert action hook */
   protected async afterUpsert(): Promise<void> {}
 
   // ============================================
-  // 모델 빌드 메서드
+  // Model Build Methods
   // ============================================
 
   /**
-   * 요청 body에서 모델 빌드 (타입 안전 버전)
-   * - JSON:API body에서 attributes 추출
-   * - DTO 클래스로 변환 (whitelist에 의해 허용된 필드만 필터링)
-   * - class-validator로 검증
+   * Build model from request body (type-safe version)
+   * - Extract attributes from JSON:API body
+   * - Transform to DTO class (filter only allowed fields via whitelist)
+   * - Validate with class-validator
    *
-   * @typeParam T - DTO 타입 (CreateDto 또는 UpdateDto)
-   * @param body JSON:API 요청 body (타입 안전)
-   * @param dtoClass DTO 클래스 (create 또는 update)
-   * @returns 검증된 모델 객체 (DTO 타입)
+   * @typeParam T - DTO type (CreateDto or UpdateDto)
+   * @param body JSON:API request body (type-safe)
+   * @param dtoClass DTO class (create or update)
+   * @returns Validated model object (DTO type)
    *
    * @example
-   * // 타입 안전한 사용
+   * // Type-safe usage
    * const model = await this.buildModel<CreateArticleDto>(body, CreateArticleDto);
-   * // model은 CreateArticleDto 타입으로 추론됨
+   * // model is inferred as CreateArticleDto type
    */
   protected async buildModel<T extends object = Record<string, unknown>>(
     body: JsonApiRequestBody<T>,
     dtoClass?: Type<T>
   ): Promise<T> {
-    // JSON:API body에서 attributes 추출
+    // Extract attributes from JSON:API body
     const attributes = body?.data?.attributes || {};
 
-    // relationships에서 ID 추출
+    // Extract IDs from relationships
     const relationships = body?.data?.relationships || {};
     const relationData: Record<string, unknown> = {};
 
@@ -487,15 +487,15 @@ export abstract class JsonApiCrudController {
 
     const rawData = { ...attributes, ...relationData } as T;
 
-    // DTO 클래스가 없으면 raw 데이터 반환
+    // Return raw data if no DTO class
     if (!dtoClass) {
       return rawData;
     }
 
-    // DTO 인스턴스로 변환
+    // Transform to DTO instance
     const dtoInstance = plainToInstance(dtoClass, rawData);
 
-    // class-validator로 검증
+    // Validate with class-validator
     const errors = await validate(dtoInstance as object, {
       whitelist: true,
       forbidNonWhitelisted: false,
@@ -505,7 +505,7 @@ export abstract class JsonApiCrudController {
       throw new JsonApiValidationException(errors);
     }
 
-    // 검증된 DTO를 plain object로 변환 (undefined 필드 제거)
+    // Convert validated DTO to plain object (remove undefined fields)
     const result = {} as T;
     for (const key of Object.keys(dtoInstance as object)) {
       const value = (dtoInstance as Record<string, unknown>)[key];
@@ -518,11 +518,11 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * ID로 레코드 조회
-   * 조회된 레코드는 this.record에 저장됨
+   * Find record by ID
+   * Retrieved record is stored in this.record
    */
   protected async findRecord(id: string): Promise<Record<string, unknown>> {
-    // ID 타입 변환 (설정에 따라 string 또는 number)
+    // Convert ID type (string or number based on settings)
     const convertedId = this.convertIdByConfig(id);
 
     this.debugLog("findRecord called", {
@@ -569,11 +569,11 @@ export abstract class JsonApiCrudController {
   }
 
   // ============================================
-  // CRUD 액션
+  // CRUD Actions
   // ============================================
 
   /**
-   * GET / - 리소스 목록 조회
+   * GET / - Retrieve resource list
    */
   @Get()
   async index(@Req() request: Request): Promise<JsonApiDocument> {
@@ -582,13 +582,13 @@ export abstract class JsonApiCrudController {
       this.record = null;
       this.model = {};
 
-      // 화이트리스트 적용된 쿼리 파싱
+      // Parse query with whitelist applied
       const { parsed, errors } = this.queryService.parseWithWhitelist(
         request,
         this.options.query
       );
 
-      // onDisallowed: 'error' 모드에서 에러 발생 시
+      // When error occurs in onDisallowed: 'error' mode
       if (errors.length > 0) {
         throw new JsonApiQueryException(
           errors.map((msg) => this.parseErrorMessage(msg))
@@ -597,7 +597,7 @@ export abstract class JsonApiCrudController {
 
       this.parsedQuery = parsed;
 
-      // beforeIndex 훅
+      // beforeIndex hook
       await this.beforeIndex();
 
       const prismaOptions = this.queryService.toPrismaOptions(
@@ -613,7 +613,7 @@ export abstract class JsonApiCrudController {
         ),
       ]);
 
-      // afterIndex 훅
+      // afterIndex hook
       await this.afterIndex(data);
 
       const included = this.collectIncludes(data, this.parsedQuery.include);
@@ -636,7 +636,7 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * GET /:id - 단일 리소스 조회
+   * GET /:id - Retrieve single resource
    */
   @Get(":id")
   async show(
@@ -647,13 +647,13 @@ export abstract class JsonApiCrudController {
       this.request = request;
       this.model = {};
 
-      // 화이트리스트 적용된 쿼리 파싱
+      // Parse query with whitelist applied
       const { parsed, errors } = this.queryService.parseWithWhitelist(
         request,
         this.options.query
       );
 
-      // onDisallowed: 'error' 모드에서 에러 발생 시
+      // When error occurs in onDisallowed: 'error' mode
       if (errors.length > 0) {
         throw new JsonApiQueryException(
           errors.map((msg) => this.parseErrorMessage(msg))
@@ -662,13 +662,13 @@ export abstract class JsonApiCrudController {
 
       this.parsedQuery = parsed;
 
-      // 레코드 조회 → this.record에 저장
+      // Retrieve record → store in this.record
       await this.findRecord(id);
 
-      // beforeShow 훅
+      // beforeShow hook
       await this.beforeShow();
 
-      // afterShow 훅
+      // afterShow hook
       await this.afterShow();
 
       const included = this.collectIncludes(
@@ -689,7 +689,7 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * POST / - 단일 리소스 생성
+   * POST / - Create single resource
    */
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -702,20 +702,20 @@ export abstract class JsonApiCrudController {
       this.parsedQuery = this.queryService.parse(request);
       this.record = null;
 
-      // 모델 빌드 → this.model에 저장
+      // Build model → store in this.model
       this.model = await this.buildModel(body, this.options.dto?.create);
 
-      // beforeCreate 훅 (this.model 수정 가능)
+      // beforeCreate hook (this.model can be modified)
       await this.beforeCreate();
 
-      // DB 저장
+      // Save to DB
       const data = await this.prismaAdapter.create(
         this.options.model,
         this.model
       );
       this.record = data;
 
-      // afterCreate 훅
+      // afterCreate hook
       await this.afterCreate();
 
       return this.serializerService.serializeOne(
@@ -729,14 +729,14 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * POST /_bulk/create - 여러 리소스 생성
-   * (비표준 확장)
-   * 트랜잭션으로 원자적 실행 보장 - 부분 실패 방지
+   * POST /_bulk/create - Create multiple resources
+   * (Non-standard extension)
+   * Ensures atomic execution with transaction - prevents partial failures
    *
-   * 에러 처리 전략:
-   * 1. 트랜잭션 시작 전 모든 데이터 검증 (Pre-validation)
-   * 2. 검증 실패 시 트랜잭션 진입 없이 즉시 에러 반환
-   * 3. 트랜잭션 내에서는 DB 작업만 수행
+   * Error handling strategy:
+   * 1. Validate all data before starting transaction (Pre-validation)
+   * 2. On validation failure, return error immediately without entering transaction
+   * 3. Only perform DB operations within transaction
    */
   @Post("_bulk/create")
   @HttpCode(HttpStatus.CREATED)
@@ -750,8 +750,8 @@ export abstract class JsonApiCrudController {
 
       const dataArray = Array.isArray(body.data) ? body.data : [body.data];
 
-      // 1단계: 트랜잭션 진입 전 모든 모델 사전 검증
-      // 검증 에러 발생 시 트랜잭션 없이 즉시 실패하여 부분 실패 방지
+      // Step 1: Pre-validate all models before entering transaction
+      // On validation error, fail immediately without transaction to prevent partial failures
       const models: Record<string, unknown>[] = [];
       const validationErrors: Array<{ index: number; errors: any }> = [];
 
@@ -770,7 +770,7 @@ export abstract class JsonApiCrudController {
         }
       }
 
-      // 검증 에러가 있으면 트랜잭션 진입 전 에러 응답
+      // If validation errors exist, return error response before entering transaction
       if (validationErrors.length > 0) {
         throw new UnprocessableEntityException({
           errors: validationErrors.map((ve) => ({
@@ -782,7 +782,7 @@ export abstract class JsonApiCrudController {
         });
       }
 
-      // 2단계: 검증 완료된 데이터만 트랜잭션으로 저장
+      // Step 2: Save only validated data via transaction
       const createdCount = await this.prismaAdapter.transaction(async (tx) => {
         const delegate = (tx as any)[this.options.model];
         const result = await delegate.createMany({
@@ -799,7 +799,7 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * PATCH /:id - 단일 리소스 업데이트
+   * PATCH /:id - Update single resource
    */
   @Patch(":id")
   async update(
@@ -811,16 +811,16 @@ export abstract class JsonApiCrudController {
       this.request = request;
       this.parsedQuery = this.queryService.parse(request);
 
-      // 기존 레코드 조회 → this.record에 저장
+      // Retrieve existing record → store in this.record
       await this.findRecord(id);
 
-      // 모델 빌드 → this.model에 저장
+      // Build model → store in this.model
       this.model = await this.buildModel(body, this.options.dto?.update);
 
-      // beforeUpdate 훅 (this.model, this.record 사용 가능)
+      // beforeUpdate hook (this.model, this.record can be used)
       await this.beforeUpdate();
 
-      // DB 업데이트 (ID 타입 변환 적용)
+      // Update DB (with ID type conversion applied)
       const data = await this.prismaAdapter.update(
         this.options.model,
         { id: this.convertIdByConfig(id) },
@@ -828,7 +828,7 @@ export abstract class JsonApiCrudController {
       );
       this.record = data;
 
-      // afterUpdate 훅
+      // afterUpdate hook
       await this.afterUpdate();
 
       return this.serializerService.serializeOne(
@@ -842,8 +842,8 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * PATCH /_bulk/update - 여러 리소스 업데이트
-   * (비표준 확장)
+   * PATCH /_bulk/update - Update multiple resources
+   * (Non-standard extension)
    */
   @Patch("_bulk/update")
   async updateMany(
@@ -870,7 +870,7 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * PUT /:id - Upsert (있으면 업데이트, 없으면 생성)
+   * PUT /:id - Upsert (update if exists, create if not)
    */
   @Put(":id")
   async upsert(
@@ -882,23 +882,23 @@ export abstract class JsonApiCrudController {
       this.request = request;
       this.parsedQuery = this.queryService.parse(request);
 
-      // 기존 레코드 조회 시도
+      // Attempt to retrieve existing record
       try {
         await this.findRecord(id);
       } catch {
         this.record = null;
       }
 
-      // 모델 빌드
+      // Build model
       const dtoClass = this.record
         ? this.options.dto?.update
         : this.options.dto?.create;
       this.model = await this.buildModel(body, dtoClass);
 
-      // beforeUpsert 훅
+      // beforeUpsert hook
       await this.beforeUpsert();
 
-      // ID 타입 변환 적용
+      // Apply ID type conversion
       const convertedId = this.convertIdByConfig(id);
       const data = await this.prismaAdapter.upsert(
         this.options.model,
@@ -908,7 +908,7 @@ export abstract class JsonApiCrudController {
       );
       this.record = data;
 
-      // afterUpsert 훅
+      // afterUpsert hook
       await this.afterUpsert();
 
       return this.serializerService.serializeOne(
@@ -922,8 +922,8 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * PUT /_bulk/upsert - 여러 리소스 Upsert
-   * (비표준 확장)
+   * PUT /_bulk/upsert - Upsert multiple resources
+   * (Non-standard extension)
    */
   @Put("_bulk/upsert")
   async upsertMany(
@@ -934,7 +934,7 @@ export abstract class JsonApiCrudController {
       this.request = request;
       const dataArray = Array.isArray(body.data) ? body.data : [body.data];
 
-      // 트랜잭션으로 전체 upsert 작업을 원자적으로 실행
+      // Execute all upsert operations atomically via transaction
       const upsertedCount = await this.prismaAdapter.transaction(async (tx) => {
         let count = 0;
         for (const item of dataArray) {
@@ -944,10 +944,10 @@ export abstract class JsonApiCrudController {
           );
           await this.beforeUpsert();
 
-          // 트랜잭션 컨텍스트에서 upsert 실행
+          // Execute upsert in transaction context
           const delegate = (tx as any)[this.options.model];
 
-          // ID가 있으면 upsert, 없으면 create
+          // If ID exists, upsert; otherwise create
           if (item.id) {
             const convertedId = this.convertIdByConfig(item.id);
             await delegate.upsert({
@@ -972,7 +972,7 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * DELETE /:id - 단일 리소스 삭제
+   * DELETE /:id - Delete single resource
    */
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -984,29 +984,29 @@ export abstract class JsonApiCrudController {
       this.request = request;
       this.model = {};
 
-      // 기존 레코드 조회 → this.record에 저장
+      // Retrieve existing record → store in this.record
       await this.findRecord(id);
 
-      // beforeDelete 훅
+      // beforeDelete hook
       await this.beforeDelete();
 
-      // DB 삭제 (ID 타입 변환 적용)
+      // Delete from DB (with ID type conversion applied)
       await this.prismaAdapter.delete(this.options.model, {
         id: this.convertIdByConfig(id),
       });
 
-      // afterDelete 훅
+      // afterDelete hook
       await this.afterDelete();
     });
   }
 
   /**
-   * POST /_bulk/delete - 여러 리소스 삭제
-   * (비표준 확장)
+   * POST /_bulk/delete - Delete multiple resources
+   * (Non-standard extension)
    *
-   * 참고: HTTP 명세상 DELETE 메서드의 request body는 정의되지 않아
-   * 일부 프록시/게이트웨이에서 무시될 수 있음. 따라서 POST 사용.
-   * 트랜잭션으로 원자적 실행 보장.
+   * Note: HTTP specification does not define request body for DELETE method,
+   * which may be ignored by some proxies/gateways. Therefore, POST is used.
+   * Ensures atomic execution via transaction.
    */
   @Post("_bulk/delete")
   async deleteMany(
@@ -1022,7 +1022,7 @@ export abstract class JsonApiCrudController {
 
       await this.beforeDelete();
 
-      // 트랜잭션으로 삭제 작업을 원자적으로 실행
+      // Execute delete operation atomically via transaction
       const deletedCount = await this.prismaAdapter.transaction(async (tx) => {
         const delegate = (tx as any)[this.options.model];
         const result = await delegate.deleteMany({
@@ -1040,19 +1040,19 @@ export abstract class JsonApiCrudController {
   }
 
   // ============================================
-  // 헬퍼 메서드
+  // Helper Methods
   // ============================================
 
   /**
-   * Include된 관계 데이터 수집
-   * 관계명과 함께 반환하여 serializeIncluded에서 정확한 serializer 매칭 지원
+   * Collect included relationship data
+   * Returns with relationship name for accurate serializer matching in serializeIncluded
    *
-   * @param data - 메인 리소스 데이터 배열
-   * @param includes - include 경로 배열 (예: ['comments', 'author.profile'])
-   * @returns IncludedResource[] - 관계명과 데이터를 포함한 배열
+   * @param data - Main resource data array
+   * @param includes - Include path array (e.g., ['comments', 'author.profile'])
+   * @returns IncludedResource[] - Array containing relationship name and data
    *
-   * @see IncludedResource - 반환 타입 정의
-   * @see JsonApiSerializerService.serializeIncluded - 이 결과를 소비하는 메서드
+   * @see IncludedResource - Return type definition
+   * @see JsonApiSerializerService.serializeIncluded - Method that consumes this result
    */
   protected collectIncludes(
     data: any[],
@@ -1088,12 +1088,12 @@ export abstract class JsonApiCrudController {
 
         const relatedItems = Array.isArray(related) ? related : [related];
 
-        // 현재 레벨의 관계 객체들을 included에 추가
+        // Add relationship objects at current level to included
         for (const relItem of relatedItems) {
           addToIncluded(relItem, current);
         }
 
-        // 더 깊은 경로가 있으면 재귀적으로 탐색
+        // If deeper path exists, traverse recursively
         if (rest.length > 0) {
           traverse(relatedItems, rest);
         }
@@ -1109,27 +1109,27 @@ export abstract class JsonApiCrudController {
   }
 
   /**
-   * 요청에서 Base URL 추출
+   * Extract Base URL from request
    */
   protected getBaseUrl(request: Request): string {
     return `${request.protocol}://${request.get("host")}`;
   }
 
   /**
-   * 리소스 타입 획득
+   * Get resource type
    */
   protected getResourceType(): string {
     return this.options.type || pluralize(this.options.model);
   }
 
   /**
-   * 쿼리 검증 에러 메시지를 QueryValidationError로 변환
+   * Convert query validation error message to QueryValidationError
    *
-   * parseWithWhitelist에서 반환되는 에러 메시지 문자열을
-   * JSON:API 형식의 QueryValidationError 객체로 변환합니다.
+   * Converts error message strings returned from parseWithWhitelist
+   * to JSON:API format QueryValidationError objects.
    *
-   * @param message 에러 메시지 문자열
-   * @returns QueryValidationError 객체
+   * @param message Error message string
+   * @returns QueryValidationError object
    */
   private parseErrorMessage(message: string): QueryValidationError {
     // Filter field 'xxx' is not allowed
@@ -1169,7 +1169,7 @@ export abstract class JsonApiCrudController {
       return JsonApiQueryException.disallowedField(fieldMatch[1], fieldMatch[2]);
     }
 
-    // 알 수 없는 에러 형식은 일반 에러로 반환
+    // Return as general error for unknown error formats
     return {
       status: "400",
       code: "INVALID_QUERY_PARAMETER",

@@ -1,5 +1,5 @@
 /**
- * JSON:API Serializer 클래스 데코레이터
+ * JSON:API Serializer Class Decorator
  *
  * @packageDocumentation
  * @module decorators
@@ -13,7 +13,7 @@ import { SetMetadata } from '@nestjs/common';
 import { JSON_API_SERIALIZER_OPTIONS } from '../constants';
 
 /**
- * Serializer 클래스 옵션
+ * Serializer class options
  */
 export interface JsonApiSerializerOptions {
   /**
@@ -24,11 +24,11 @@ export interface JsonApiSerializerOptions {
 }
 
 /**
- * JSON:API Serializer 클래스 데코레이터
+ * JSON:API Serializer Class Decorator
  *
- * Serializer 클래스에 JSON:API 리소스 타입 정보를 등록합니다.
+ * Registers JSON:API resource type information on a Serializer class.
  *
- * @param options - Serializer 옵션
+ * @param options - Serializer options
  * @returns ClassDecorator
  *
  * @example

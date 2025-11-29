@@ -1,5 +1,5 @@
 /**
- * 유틸리티 함수 barrel export
+ * Utility functions barrel export
  *
  * @packageDocumentation
  * @module utils

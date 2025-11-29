@@ -1,7 +1,7 @@
 /**
- * Whitelist E2E 테스트용 컨트롤러 (ignore 모드)
+ * Whitelist E2E Test Controller (ignore mode)
  *
- * 허용되지 않은 쿼리 파라미터를 무시하고 계속 진행합니다.
+ * Ignores disallowed query parameters and continues processing.
  */
 import { Controller } from '@nestjs/common';
 import {
@@ -23,19 +23,19 @@ import { CreateArticleDto, UpdateArticleDto } from './article.dto';
     update: UpdateArticleDto,
   },
   query: {
-    // 허용된 필터 필드
+    // Allowed filter fields
     allowedFilters: ['status', 'createdAt', 'title'],
-    // 허용된 정렬 필드
+    // Allowed sort fields
     allowedSorts: ['createdAt', 'updatedAt', 'title'],
-    // 허용된 include 관계
+    // Allowed include relationships
     allowedIncludes: ['author', 'comments'],
-    // include 최대 깊이
+    // Maximum include depth
     maxIncludeDepth: 2,
-    // 허용된 sparse fieldsets
+    // Allowed sparse fieldsets
     allowedFields: {
       articles: ['title', 'content', 'status', 'created-at', 'updated-at'],
     },
-    // 허용되지 않은 파라미터 무시
+    // Ignore disallowed parameters
     onDisallowed: 'ignore',
   },
 })

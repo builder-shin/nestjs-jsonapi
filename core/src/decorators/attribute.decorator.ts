@@ -1,5 +1,5 @@
 /**
- * JSON:API Attribute 프로퍼티 데코레이터
+ * JSON:API Attribute Property Decorator
  *
  * @packageDocumentation
  * @module decorators
@@ -13,50 +13,50 @@ import 'reflect-metadata';
 import { JSON_API_ATTRIBUTES } from '../constants';
 
 /**
- * Attribute 데코레이터 옵션
+ * Attribute decorator options
  */
 export interface AttributeOptions {
   /**
-   * JSON:API 응답에서 사용할 속성명
-   * 미지정시 프로퍼티명을 kebab-case로 변환
+   * Attribute name to use in JSON:API response
+   * If not specified, property name is converted to kebab-case
    */
   name?: string;
 
   /**
-   * 직렬화 시 해당 속성 제외 여부
+   * Whether to exclude this attribute during serialization
    * @default false
    */
   exclude?: boolean;
 }
 
 /**
- * Attribute 메타데이터 (내부 저장용)
+ * Attribute metadata (for internal storage)
  */
 export interface AttributeMetadata extends AttributeOptions {
-  /** 원본 프로퍼티 키 */
+  /** Original property key */
   propertyKey: string;
 }
 
 /**
- * JSON:API Attribute 데코레이터
+ * JSON:API Attribute Decorator
  *
- * 리소스의 속성(attribute)을 정의합니다.
- * 직렬화 시 JSON:API attributes 객체에 포함됩니다.
+ * Defines a resource attribute.
+ * Included in the JSON:API attributes object during serialization.
  *
- * @param options - 속성 옵션
+ * @param options - Attribute options
  * @returns PropertyDecorator
  *
  * @example
  * ```typescript
- * // 기본 사용 (프로퍼티명 → kebab-case 자동 변환)
+ * // Basic usage (property name -> automatic kebab-case conversion)
  * @Attribute()
  * title: string;
  *
- * // 커스텀 속성명 지정
+ * // Custom attribute name specification
  * @Attribute({ name: 'is-published' })
  * isPublished: boolean;
  *
- * // 직렬화에서 제외
+ * // Exclude from serialization
  * @Attribute({ exclude: true })
  * password: string;
  * ```

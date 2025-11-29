@@ -1,5 +1,5 @@
 /**
- * 예외 클래스 barrel export
+ * Exception classes barrel export
  *
  * @packageDocumentation
  * @module exceptions
