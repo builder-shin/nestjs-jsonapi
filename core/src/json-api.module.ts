@@ -15,8 +15,16 @@
  * - constants/*: 메타데이터 상수
  */
 
-import { Module, DynamicModule, Global, Provider, Type } from "@nestjs/common";
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import {
+  Module,
+  DynamicModule,
+  Global,
+  Provider,
+  Type,
+  OnModuleInit,
+  Logger,
+} from "@nestjs/common";
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, HttpAdapterHost } from "@nestjs/core";
 import { JsonApiModuleOptions, JsonApiModuleAsyncOptions } from "./interfaces";
 import { PrismaAdapterService } from "./services/prisma-adapter.service";
 import { JsonApiQueryService } from "./services/json-api-query.service";
@@ -67,7 +75,28 @@ import { JSON_API_MODULE_OPTIONS, PRISMA_SERVICE_TOKEN } from "./constants";
  */
 @Global()
 @Module({})
-export class JsonApiModule {
+export class JsonApiModule implements OnModuleInit {
+  private readonly logger = new Logger(JsonApiModule.name);
+
+  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
+  /**
+   * 모듈 초기화 시 Express 쿼리 파서를 확장 모드로 설정
+   *
+   * JSON:API 필터링(filter[field][operator]=value)을 위해
+   * 중첩된 쿼리 파라미터를 객체로 파싱할 수 있어야 합니다.
+   */
+  onModuleInit() {
+    const httpAdapter = this.httpAdapterHost?.httpAdapter;
+    if (httpAdapter) {
+      const instance = httpAdapter.getInstance();
+      // Express 확장 쿼리 파서 설정 (qs 라이브러리 사용)
+      // filter[status]=draft → { filter: { status: 'draft' } }
+      instance.set("query parser", "extended");
+      this.logger.log("Express 확장 쿼리 파서 설정 완료 (JSON:API 필터링 지원)");
+    }
+  }
+
   /**
    * 동기 모듈 설정
    *
