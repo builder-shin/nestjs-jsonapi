@@ -1,24 +1,24 @@
 /**
- * 쿼리 파라미터 화이트리스트 옵션 인터페이스
+ * Query parameter whitelist options interface
  *
- * JSON:API 요청의 필터, 정렬, include, fields 등의 쿼리 파라미터를
- * 제한하여 보안과 성능을 강화합니다.
+ * Restricts filter, sort, include, fields query parameters
+ * in JSON:API requests to enhance security and performance.
  *
  * @packageDocumentation
  * @module interfaces
  */
 
 /**
- * 쿼리 파라미터 허용 목록 옵션
+ * Query parameter whitelist options
  *
- * 허용되지 않은 쿼리 파라미터를 제한하여 다음을 방지합니다:
- * - 민감한 필드로의 필터링 (예: password 필드)
- * - 과도한 관계 포함으로 인한 성능 저하
- * - 인덱스 없는 필드 정렬로 인한 DB 부하
+ * Restricts disallowed query parameters to prevent:
+ * - Filtering on sensitive fields (e.g., password field)
+ * - Performance degradation from excessive relationship inclusion
+ * - Database load from sorting on non-indexed fields
  *
  * @example
  * ```typescript
- * // 기본 사용
+ * // Basic usage
  * const options: QueryWhitelistOptions = {
  *   allowedFilters: ['status', 'createdAt', 'author.name'],
  *   allowedSorts: ['createdAt', 'updatedAt', 'title'],
@@ -27,7 +27,7 @@
  *   onDisallowed: 'error',
  * };
  *
- * // 모든 쿼리 비활성화
+ * // Disable all queries
  * const strictOptions: QueryWhitelistOptions = {
  *   allowedFilters: [],
  *   allowedSorts: [],
@@ -37,95 +37,95 @@
  */
 export interface QueryWhitelistOptions {
   /**
-   * 허용된 필터 필드 목록
+   * Allowed filter field list
    *
-   * 필터링에 사용할 수 있는 필드를 명시적으로 지정합니다.
-   * 중첩 필드도 지원합니다 (예: 'author.name').
+   * Explicitly specifies fields that can be used for filtering.
+   * Nested fields are supported (e.g., 'author.name').
    *
-   * - `undefined`: 모든 필터 허용 (기본값, 하위 호환)
-   * - 빈 배열 `[]`: 모든 필터 비활성화
-   * - 문자열 배열: 해당 필드만 필터링 허용
+   * - `undefined`: Allow all filters (default, backward compatible)
+   * - Empty array `[]`: Disable all filters
+   * - String array: Only allow filtering on specified fields
    *
-   * 부모 필드가 허용되면 모든 자식 필드도 허용됩니다.
-   * 예: 'author' 허용 시 'author.name', 'author.email' 등 모두 허용
+   * If a parent field is allowed, all child fields are also allowed.
+   * Example: allowing 'author' also allows 'author.name', 'author.email', etc.
    *
    * @example ['status', 'createdAt', 'author.name']
-   * @default undefined (모든 필터 허용)
+   * @default undefined (all filters allowed)
    */
   allowedFilters?: string[];
 
   /**
-   * 허용된 정렬 필드 목록
+   * Allowed sort field list
    *
-   * 정렬에 사용할 수 있는 필드를 명시적으로 지정합니다.
-   * 성능을 위해 인덱스가 있는 필드만 허용하는 것을 권장합니다.
+   * Explicitly specifies fields that can be used for sorting.
+   * Recommended to only allow indexed fields for performance.
    *
-   * - `undefined`: 모든 정렬 허용 (기본값)
-   * - 빈 배열 `[]`: 모든 정렬 비활성화
-   * - 문자열 배열: 해당 필드만 정렬 허용
+   * - `undefined`: Allow all sorts (default)
+   * - Empty array `[]`: Disable all sorts
+   * - String array: Only allow sorting on specified fields
    *
    * @example ['createdAt', 'updatedAt', 'title']
-   * @default undefined (모든 정렬 허용)
+   * @default undefined (all sorts allowed)
    */
   allowedSorts?: string[];
 
   /**
-   * 허용된 include 관계 목록
+   * Allowed include relationship list
    *
-   * 포함할 수 있는 관계를 명시적으로 지정합니다.
-   * 성능과 보안을 위해 필요한 관계만 허용하는 것을 권장합니다.
+   * Explicitly specifies relationships that can be included.
+   * Recommended to only allow necessary relationships for performance and security.
    *
-   * - `undefined`: 모든 include 허용 (기본값)
-   * - 빈 배열 `[]`: 모든 include 비활성화
-   * - 문자열 배열: 해당 관계만 include 허용
+   * - `undefined`: Allow all includes (default)
+   * - Empty array `[]`: Disable all includes
+   * - String array: Only allow including specified relationships
    *
-   * 부모 관계가 허용되면 자식 관계도 허용됩니다.
-   * 예: 'author' 허용 시 'author.profile' 도 허용
+   * If a parent relationship is allowed, child relationships are also allowed.
+   * Example: allowing 'author' also allows 'author.profile'
    *
    * @example ['author', 'comments', 'tags']
-   * @default undefined (모든 include 허용)
+   * @default undefined (all includes allowed)
    */
   allowedIncludes?: string[];
 
   /**
-   * include 최대 중첩 깊이
+   * Maximum include nesting depth
    *
-   * 관계 포함의 최대 중첩 수준을 제한합니다.
-   * 깊은 중첩은 N+1 쿼리 문제를 유발할 수 있으므로 제한을 권장합니다.
+   * Limits the maximum nesting level for relationship inclusion.
+   * Deep nesting can cause N+1 query problems, so limiting is recommended.
    *
-   * - `undefined`: 무제한 (기본값, 주의 필요)
-   * - `1`: 직접 관계만 허용 (예: 'author')
-   * - `2`: 1단계 중첩 허용 (예: 'author.profile')
-   * - `n`: n-1단계 중첩 허용
+   * - `undefined`: Unlimited (default, use with caution)
+   * - `1`: Only allow direct relationships (e.g., 'author')
+   * - `2`: Allow 1-level nesting (e.g., 'author.profile')
+   * - `n`: Allow n-1 levels of nesting
    *
    * @example 2
-   * @default undefined (무제한)
+   * @default undefined (unlimited)
    */
   maxIncludeDepth?: number;
 
   /**
-   * 허용된 sparse fieldsets 필드 목록 (타입별)
+   * Allowed sparse fieldsets field list (by type)
    *
-   * 각 리소스 타입별로 반환 가능한 필드를 제한합니다.
-   * 민감한 정보가 포함된 필드를 숨기는데 사용합니다.
+   * Restricts returnable fields for each resource type.
+   * Used to hide fields containing sensitive information.
    *
-   * - `undefined`: 모든 필드 허용 (기본값)
-   * - 타입별 필드 배열: 해당 필드만 선택 허용
+   * - `undefined`: Allow all fields (default)
+   * - Field array by type: Only allow selecting specified fields
    *
    * @example { articles: ['title', 'content'], users: ['name', 'email'] }
-   * @default undefined (모든 필드 허용)
+   * @default undefined (all fields allowed)
    */
   allowedFields?: Record<string, string[]>;
 
   /**
-   * 허용되지 않은 쿼리 파라미터 처리 방식
+   * Handling method for disallowed query parameters
    *
-   * 화이트리스트에 없는 쿼리 파라미터가 요청되었을 때의 동작을 지정합니다.
+   * Specifies behavior when a query parameter not in the whitelist is requested.
    *
-   * - `'ignore'`: 무시하고 진행 (기본값, 하위 호환)
-   * - `'error'`: 400 Bad Request 에러 반환
+   * - `'ignore'`: Ignore and proceed (default, backward compatible)
+   * - `'error'`: Return 400 Bad Request error
    *
-   * 보안이 중요한 API에서는 'error' 모드를 권장합니다.
+   * 'error' mode is recommended for security-critical APIs.
    *
    * @example 'error'
    * @default 'ignore'
@@ -134,10 +134,10 @@ export interface QueryWhitelistOptions {
 }
 
 /**
- * 쿼리 화이트리스트 검증 결과
+ * Query whitelist validation result
  *
- * parseWithWhitelist 메서드의 반환 타입으로,
- * 검증된 파싱 결과와 함께 경고/에러 메시지를 포함합니다.
+ * Return type of parseWithWhitelist method,
+ * includes validated parsing result along with warning/error messages.
  *
  * @example
  * ```typescript
@@ -148,37 +148,37 @@ export interface QueryWhitelistOptions {
  * }
  *
  * if (result.warnings.length > 0) {
- *   console.warn('무시된 쿼리 파라미터:', result.warnings);
+ *   console.warn('Ignored query parameters:', result.warnings);
  * }
  *
- * // result.parsed를 사용하여 쿼리 실행
+ * // Use result.parsed to execute query
  * ```
  */
 export interface QueryValidationResult {
   /**
-   * 화이트리스트가 적용된 파싱 결과
+   * Parsing result with whitelist applied
    *
-   * 허용되지 않은 필터/정렬/include/fields가 제거된 상태입니다.
+   * State with disallowed filters/sorts/includes/fields removed.
    */
   parsed: import('./filter.interface').ParsedQuery;
 
   /**
-   * 무시된 쿼리 파라미터 경고 메시지 목록
+   * Warning message list for ignored query parameters
    *
-   * onDisallowed: 'ignore' 모드에서 허용되지 않은 파라미터가
-   * 요청되었을 때 해당 정보를 담습니다.
-   * 로깅이나 디버깅 용도로 활용할 수 있습니다.
+   * Contains information when disallowed parameters were requested
+   * in onDisallowed: 'ignore' mode.
+   * Can be used for logging or debugging purposes.
    *
    * @example ["Filter field 'password' is not allowed"]
    */
   warnings: string[];
 
   /**
-   * 에러 메시지 목록
+   * Error message list
    *
-   * onDisallowed: 'error' 모드에서 허용되지 않은 파라미터가
-   * 요청되었을 때 해당 정보를 담습니다.
-   * 에러가 있으면 400 응답을 반환해야 합니다.
+   * Contains information when disallowed parameters were requested
+   * in onDisallowed: 'error' mode.
+   * Should return 400 response if there are errors.
    *
    * @example ["Filter field 'password' is not allowed"]
    */

@@ -1,12 +1,12 @@
 /**
  * JSON:API Body DTO
  *
- * JSON:API 요청 body의 타입 정의 및 검증
+ * Type definitions and validation for JSON:API request body
  *
  * @packageDocumentation
  * @module dto
  *
- * 의존성: 없음
+ * Dependencies: none
  */
 
 import { Type } from 'class-transformer';
@@ -21,7 +21,7 @@ import {
 /**
  * JSON:API Resource Identifier
  *
- * 리소스를 식별하기 위한 최소 정보 (type + id)
+ * Minimum information required to identify a resource (type + id)
  *
  * @example
  * ```typescript
@@ -42,17 +42,17 @@ export class ResourceIdentifierDto {
 /**
  * JSON:API Relationship Data
  *
- * 관계 데이터를 나타내는 DTO
- * To-One, To-Many, 또는 null 관계를 지원합니다.
+ * DTO representing relationship data
+ * Supports To-One, To-Many, or null relationships.
  *
  * @example
  * ```typescript
- * // To-One 관계
+ * // To-One relationship
  * const toOne: RelationshipDataDto = {
  *   data: { type: 'users', id: '1' }
  * };
  *
- * // To-Many 관계
+ * // To-Many relationship
  * const toMany: RelationshipDataDto = {
  *   data: [
  *     { type: 'tags', id: '1' },
@@ -71,7 +71,7 @@ export class RelationshipDataDto {
 /**
  * JSON:API Single Resource Body
  *
- * 개별 리소스의 body 구조
+ * Body structure for individual resources
  *
  * @example
  * ```typescript
@@ -85,21 +85,21 @@ export class RelationshipDataDto {
  * ```
  */
 export class JsonApiResourceDto {
-  /** 리소스 타입 (plural kebab-case) */
+  /** Resource type (plural kebab-case) */
   @IsString()
   type!: string;
 
-  /** 리소스 ID (업데이트 시 필수, 생성 시 선택) */
+  /** Resource ID (required for update, optional for create) */
   @IsString()
   @IsOptional()
   id?: string;
 
-  /** 리소스 속성 */
+  /** Resource attributes */
   @IsObject()
   @IsOptional()
   attributes?: Record<string, unknown>;
 
-  /** 관계 정보 */
+  /** Relationship information */
   @IsObject()
   @IsOptional()
   relationships?: Record<string, RelationshipDataDto>;
@@ -108,7 +108,7 @@ export class JsonApiResourceDto {
 /**
  * JSON:API Create/Update Request Body
  *
- * 단일 리소스 생성/수정 요청 body
+ * Request body for single resource creation/modification
  *
  * @example
  * ```typescript
@@ -129,7 +129,7 @@ export class JsonApiBodyDto {
 /**
  * JSON:API Bulk Request Body
  *
- * 복수 리소스 생성 요청 body
+ * Request body for multiple resource creation
  *
  * @example
  * ```typescript
@@ -151,29 +151,29 @@ export class JsonApiBulkBodyDto {
 /**
  * JSON:API Bulk Update/Delete Request Body
  *
- * 조건 기반 대량 수정/삭제 요청 body
+ * Request body for condition-based bulk update/delete
  *
  * @example
  * ```typescript
- * // 대량 업데이트
+ * // Bulk update
  * const bulkUpdate: JsonApiBulkOperationDto = {
  *   filter: { status: 'draft' },
  *   attributes: { status: 'published' }
  * };
  *
- * // 대량 삭제
+ * // Bulk delete
  * const bulkDelete: JsonApiBulkOperationDto = {
  *   filter: { createdAt: { lt: '2024-01-01' } }
  * };
  * ```
  */
 export class JsonApiBulkOperationDto {
-  /** 대상 리소스 필터 조건 */
+  /** Target resource filter conditions */
   @IsObject()
   @IsOptional()
   filter?: Record<string, unknown>;
 
-  /** 업데이트할 속성 (수정 작업 시) */
+  /** Attributes to update (for update operations) */
   @IsObject()
   @IsOptional()
   attributes?: Record<string, unknown>;

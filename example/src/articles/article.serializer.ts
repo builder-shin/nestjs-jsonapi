@@ -4,7 +4,7 @@ import { UserSerializer } from "../users/user.serializer";
 /**
  * ArticleSerializer
  *
- * Article 모델을 JSON:API 형식으로 직렬화합니다.
+ * Serializes the Article model to JSON:API format.
  */
 @JsonApiSerializer({ type: "articles" })
 export class ArticleSerializer {
@@ -26,11 +26,11 @@ export class ArticleSerializer {
   @Attribute()
   updatedAt: Date;
 
-  // 관계 정의
+  // Relationship definitions
   @Relationship(() => UserSerializer)
   author: unknown;
 
-  // 순환 참조 방지를 위해 lazy import 사용
+  // Use lazy import to prevent circular reference
   @Relationship(() => require("../comments/comment.serializer").CommentSerializer)
   comments: unknown[];
 }

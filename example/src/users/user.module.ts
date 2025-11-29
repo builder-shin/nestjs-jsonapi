@@ -4,7 +4,7 @@ import { UserController } from "./user.controller";
 /**
  * UserModule
  *
- * 사용자 관련 기능을 제공하는 모듈입니다.
+ * Module that provides user-related functionality.
  */
 @Module({
   controllers: [UserController],

@@ -4,7 +4,7 @@ import { PrismaService } from "./prisma.service";
 /**
  * PrismaModule
  *
- * PrismaService를 전역으로 제공하는 모듈입니다.
+ * Module that provides PrismaService globally.
  */
 @Global()
 @Module({

@@ -3,28 +3,28 @@ import { Injectable } from '@nestjs/common';
 /**
  * Mock Prisma Service for E2E Testing
  *
- * 실제 DB 연결 없이 E2E 테스트를 수행하기 위한 Mock 서비스입니다.
- * 테스트에서 사용되는 모델 데이터를 메모리에 저장합니다.
+ * A mock service for performing E2E tests without actual DB connection.
+ * Stores model data used in tests in memory.
  */
 @Injectable()
 export class PrismaService {
-  // 메모리 내 데이터 저장소
+  // In-memory data storage
   private data: Record<string, Record<string, any>[]> = {
     article: [],
   };
 
-  // ID 카운터
+  // ID counter
   private idCounter = 1;
 
   /**
-   * 초기 테스트 데이터 설정
+   * Initialize test data
    */
   constructor() {
     this.seedData();
   }
 
   /**
-   * 테스트용 시드 데이터
+   * Seed data for testing
    */
   private seedData(): void {
     this.data.article = [
@@ -60,40 +60,40 @@ export class PrismaService {
   }
 
   /**
-   * 데이터 리셋 (테스트 간 격리)
+   * Reset data (test isolation)
    */
   resetData(): void {
     this.seedData();
   }
 
   /**
-   * Prisma Client처럼 동작하는 모델 delegate 반환
+   * Returns a model delegate that behaves like Prisma Client
    */
   get article() {
     return this.createDelegate('article');
   }
 
   /**
-   * 모델별 delegate 생성
+   * Create delegate for each model
    */
   private createDelegate(model: string) {
     return {
       findMany: async (args?: any) => {
         let results = [...(this.data[model] || [])];
 
-        // where 조건 적용
+        // Apply where conditions
         if (args?.where) {
           results = results.filter((item) =>
             this.matchWhere(item, args.where),
           );
         }
 
-        // orderBy 적용
+        // Apply orderBy
         if (args?.orderBy) {
           results = this.applyOrderBy(results, args.orderBy);
         }
 
-        // skip/take (pagination) 적용
+        // Apply skip/take (pagination)
         if (args?.skip !== undefined) {
           results = results.slice(args.skip);
         }
@@ -234,7 +234,7 @@ export class PrismaService {
   }
 
   /**
-   * where 조건 매칭
+   * Match where conditions
    */
   private matchWhere(item: any, where: any): boolean {
     if (!where || Object.keys(where).length === 0) {
@@ -244,7 +244,7 @@ export class PrismaService {
     for (const [key, value] of Object.entries(where)) {
       if (value === undefined) continue;
 
-      // 중첩 객체 (Prisma 연산자)
+      // Nested object (Prisma operators)
       if (typeof value === 'object' && value !== null) {
         const ops = value as Record<string, any>;
 
@@ -272,7 +272,7 @@ export class PrismaService {
         )
           return false;
       } else {
-        // 단순 값 비교 (equals)
+        // Simple value comparison (equals)
         if (item[key] !== value) return false;
       }
     }
@@ -281,7 +281,7 @@ export class PrismaService {
   }
 
   /**
-   * orderBy 적용
+   * Apply orderBy
    */
   private applyOrderBy(items: any[], orderBy: any): any[] {
     const orders = Array.isArray(orderBy) ? orderBy : [orderBy];
@@ -303,7 +303,7 @@ export class PrismaService {
   }
 
   /**
-   * 트랜잭션 Mock (단순히 콜백 실행)
+   * Transaction mock (simply executes callback)
    */
   async $transaction<T>(fn: (prisma: this) => Promise<T>): Promise<T> {
     return fn(this);

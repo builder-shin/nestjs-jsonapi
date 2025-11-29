@@ -1,5 +1,5 @@
 /**
- * 쿼리 파라미터 파싱 헬퍼 함수
+ * Query Parameter Parsing Helper Functions
  *
  * @packageDocumentation
  * @module utils
@@ -13,36 +13,36 @@ import { BadRequestException } from '@nestjs/common';
 import { FilterOperator, VALID_FILTER_OPERATORS } from '../interfaces';
 
 /**
- * 연산자 유효성 검증
+ * Validate operator
  *
- * @param op - 검증할 연산자 문자열
- * @returns 유효한 FilterOperator이면 true
+ * @param op - Operator string to validate
+ * @returns true if valid FilterOperator
  */
 export function isValidOperator(op: string): op is FilterOperator {
   return VALID_FILTER_OPERATORS.includes(op as FilterOperator);
 }
 
 /**
- * 필드명 유효성 검증 정규식
- * - 알파벳, 숫자, 밑줄, 점(중첩 관계)만 허용
- * - SQL 인젝션 방지를 위한 특수문자 차단
+ * Field name validation regex
+ * - Only allows alphanumeric, underscore, and dot (for nested relations)
+ * - Blocks special characters to prevent SQL injection
  */
 const VALID_FIELD_NAME_REGEX =
   /^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$/;
 
 /**
- * 필드명 유효성 검증 (SQL/Query 인젝션 방지)
+ * Validate field name (SQL/Query injection prevention)
  *
- * @param field - 검증할 필드명
- * @returns 유효하면 true
+ * @param field - Field name to validate
+ * @returns true if valid
  *
  * @example
  * ```typescript
  * isValidFieldName('name'); // true
  * isValidFieldName('author.name'); // true
  * isValidFieldName('user_profile'); // true
- * isValidFieldName('123name'); // false (숫자로 시작)
- * isValidFieldName('name;DROP TABLE'); // false (특수문자 포함)
+ * isValidFieldName('123name'); // false (starts with number)
+ * isValidFieldName('name;DROP TABLE'); // false (contains special characters)
  * ```
  */
 export function isValidFieldName(field: string): boolean {
@@ -53,40 +53,40 @@ export function isValidFieldName(field: string): boolean {
 }
 
 /**
- * ISO 8601 날짜 문자열 감지 정규식
- * 예: 2024-01-15, 2024-01-15T10:30:00, 2024-01-15T10:30:00.000Z, 2024-01-15T10:30:00.123456Z
- * 밀리초/마이크로초는 1-6자리까지 지원
+ * ISO 8601 date string detection regex
+ * Example: 2024-01-15, 2024-01-15T10:30:00, 2024-01-15T10:30:00.000Z, 2024-01-15T10:30:00.123456Z
+ * Supports 1-6 digits for milliseconds/microseconds
  */
 const ISO_DATE_REGEX =
   /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})?)?$/;
 
 /**
- * ISO 8601 날짜 문자열인지 확인
+ * Check if string is ISO 8601 date format
  */
 function isIsoDateString(value: string): boolean {
   return ISO_DATE_REGEX.test(value);
 }
 
 /**
- * 유효한 날짜인지 검증
+ * Validate if date is valid
  *
- * JavaScript의 Date는 잘못된 날짜를 자동 보정합니다 (예: 2024-02-30 → 2024-03-01).
- * 이 함수는 원본 문자열의 날짜 부분과 파싱된 Date 객체의 날짜를 비교하여
- * 자동 보정이 발생했는지 확인합니다.
+ * JavaScript's Date auto-corrects invalid dates (e.g., 2024-02-30 → 2024-03-01).
+ * This function compares the date part of the original string with the parsed Date object
+ * to check if auto-correction occurred.
  *
- * @param dateString - ISO 8601 형식의 날짜 문자열
- * @param date - 파싱된 Date 객체
- * @returns 유효한 날짜이면 true, 자동 보정이 발생했으면 false
+ * @param dateString - ISO 8601 format date string
+ * @param date - Parsed Date object
+ * @returns true if valid date, false if auto-corrected
  *
  * @example
  * ```typescript
- * isValidDate("2024-02-29", new Date("2024-02-29")); // true (윤년)
- * isValidDate("2024-02-30", new Date("2024-02-30")); // false (자동 보정됨)
- * isValidDate("2023-02-29", new Date("2023-02-29")); // false (윤년 아님)
+ * isValidDate("2024-02-29", new Date("2024-02-29")); // true (leap year)
+ * isValidDate("2024-02-30", new Date("2024-02-30")); // false (auto-corrected)
+ * isValidDate("2023-02-29", new Date("2023-02-29")); // false (not a leap year)
  * ```
  */
 function isValidDate(dateString: string, date: Date): boolean {
-  // 날짜 부분만 추출 (YYYY-MM-DD)
+  // Extract date part only (YYYY-MM-DD)
   const datePart = dateString.split('T')[0];
   const [yearStr, monthStr, dayStr] = datePart.split('-');
 
@@ -94,8 +94,8 @@ function isValidDate(dateString: string, date: Date): boolean {
   const month = parseInt(monthStr, 10);
   const day = parseInt(dayStr, 10);
 
-  // Date 객체의 실제 값과 비교
-  // getMonth()는 0-based이므로 +1 필요
+  // Compare with actual Date object values
+  // getMonth() is 0-based, so +1 is needed
   return (
     date.getUTCFullYear() === year &&
     date.getUTCMonth() + 1 === month &&
@@ -104,36 +104,36 @@ function isValidDate(dateString: string, date: Date): boolean {
 }
 
 /**
- * 값을 적절한 타입으로 변환 (숫자, 날짜, 또는 원본 문자열)
+ * Convert value to appropriate type (number, date, or original string)
  */
 function convertValue(value: string): unknown {
-  // 숫자 변환 시도
+  // Try number conversion
   const num = Number(value);
   if (!isNaN(num) && value.trim() !== '') {
     return num;
   }
 
-  // ISO 날짜 문자열인 경우 Date 객체로 변환
+  // Convert ISO date string to Date object
   if (isIsoDateString(value)) {
     const date = new Date(value);
-    // 유효한 날짜인지 확인 (Invalid Date 및 자동 보정된 날짜 모두 거부)
+    // Check if valid date (reject both Invalid Date and auto-corrected dates)
     if (!isNaN(date.getTime()) && isValidDate(value, date)) {
       return date;
     }
   }
 
-  // 그 외에는 원본 문자열 반환
+  // Otherwise return original string
   return value;
 }
 
 /**
- * 필터 값 파싱 (연산자에 따라 변환)
+ * Parse filter value (convert based on operator)
  *
- * @param operator - 필터 연산자
- * @param value - 필터 값
- * @param field - 필터 대상 필드명 (에러 메시지용, 선택적)
- * @returns 파싱된 필터 값
- * @throws BadRequestException JSON:API 형식의 에러
+ * @param operator - Filter operator
+ * @param value - Filter value
+ * @param field - Filter target field name (optional, for error messages)
+ * @returns Parsed filter value
+ * @throws BadRequestException JSON:API formatted error
  *
  * @example
  * ```typescript
@@ -152,11 +152,11 @@ export function parseFilterValue(
   switch (operator) {
     case 'in':
     case 'nin':
-      // 쉼표로 구분된 배열로 변환, 각 값은 타입 변환 적용
+      // Convert to comma-separated array, apply type conversion to each value
       return strValue.split(',').map((v) => convertValue(v.trim()));
 
     case 'between': {
-      // 쉼표로 구분된 두 값 [시작, 끝]
+      // Two comma-separated values [start, end]
       const parts = strValue.split(',').map((v) => v.trim());
       if (parts.length !== 2) {
         throw new BadRequestException({
@@ -179,7 +179,7 @@ export function parseFilterValue(
     }
 
     case 'null': {
-      // boolean으로 변환
+      // Convert to boolean
       const lowerValue = strValue.toLowerCase();
       if (lowerValue !== 'true' && lowerValue !== 'false') {
         throw new BadRequestException({
@@ -203,7 +203,7 @@ export function parseFilterValue(
     case 'gte':
     case 'lt':
     case 'lte':
-      // 숫자, 날짜, 또는 문자열로 변환
+      // Convert to number, date, or string
       return convertValue(strValue);
 
     default:
@@ -212,12 +212,12 @@ export function parseFilterValue(
 }
 
 /**
- * 중첩된 필드 경로에 값 설정
+ * Set value at nested field path
  *
- * @param obj - 대상 객체
- * @param path - 필드 경로 (점으로 구분)
- * @param value - 설정할 값
- * @param transformKey - 키 변환 함수 (선택)
+ * @param obj - Target object
+ * @param path - Field path (dot-separated)
+ * @param value - Value to set
+ * @param transformKey - Key transformation function (optional)
  *
  * @example
  * ```typescript
@@ -248,11 +248,11 @@ export function setNestedValue(
 }
 
 /**
- * 연산자를 Prisma 쿼리 조건으로 변환
+ * Convert operator to Prisma query condition
  *
- * @param operator - 필터 연산자
- * @param value - 필터 값
- * @returns Prisma where 조건 객체
+ * @param operator - Filter operator
+ * @param value - Filter value
+ * @returns Prisma where condition object
  *
  * @example
  * ```typescript

@@ -4,8 +4,8 @@ import { PrismaClient } from "@prisma/client";
 /**
  * PrismaService
  *
- * Prisma 클라이언트를 NestJS 서비스로 래핑합니다.
- * 애플리케이션 시작/종료 시 데이터베이스 연결을 관리합니다.
+ * Wraps the Prisma client as a NestJS service.
+ * Manages database connection on application start/shutdown.
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {

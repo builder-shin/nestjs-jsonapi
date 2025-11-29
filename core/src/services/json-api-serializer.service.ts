@@ -1,10 +1,10 @@
 /**
- * JSON:API 직렬화 서비스
+ * JSON:API serialization service
  *
  * @packageDocumentation
  * @module services
  *
- * 의존성: constants/metadata.constants.ts, interfaces/*, utils/naming.util.ts
+ * Dependencies: constants/metadata.constants.ts, interfaces/*, utils/naming.util.ts
  */
 
 import { Injectable, Type } from '@nestjs/common';
@@ -25,75 +25,75 @@ import { AttributeMetadata } from '../decorators/attribute.decorator';
 import { RelationshipMetadata } from '../decorators/relationship.decorator';
 
 /**
- * Included 리소스 정보
+ * Included resource information
  *
- * 관계명과 함께 전달하여 정확한 serializer 매칭을 지원합니다.
+ * Passed with relationship name to support accurate serializer matching.
  */
 export interface IncludedResource {
-  /** 관계명 (예: 'comments', 'author') */
+  /** Relationship name (e.g., 'comments', 'author') */
   relationName: string;
-  /** 실제 데이터 */
+  /** Actual data */
   data: any;
 }
 
 /**
- * 단일 리소스 직렬화 옵션
+ * Single resource serialization options
  */
 export interface SerializeOptions {
-  /** 기본 URL (링크 생성용) */
+  /** Base URL (for link generation) */
   baseUrl?: string;
   /**
-   * Included 리소스 배열
-   * - IncludedResource[] 형태로 전달하면 정확한 타입 매칭
-   * - any[] 형태로 전달하면 기존 방식으로 동작 (하위 호환)
+   * Included resource array
+   * - IncludedResource[] format for accurate type matching
+   * - any[] format for existing behavior (backward compatible)
    */
   included?: IncludedResource[] | any[];
-  /** 추가 메타 정보 */
+  /** Additional meta information */
   meta?: JsonApiMeta;
-  /** Sparse Fieldsets - 선택할 필드 목록 */
+  /** Sparse Fieldsets - list of fields to select */
   sparseFields?: string[];
 }
 
 /**
- * 컬렉션 직렬화 옵션
+ * Collection serialization options
  */
 export interface SerializeManyOptions extends SerializeOptions {
-  /** 페이지네이션 정보 */
+  /** Pagination information */
   pagination?: {
     offset: number;
     limit: number;
     total: number;
   };
   /**
-   * 링크 생성 시 포함할 쿼리 파라미터 (필터, 정렬, include 등)
-   * 페이지네이션 링크에 기존 쿼리 조건을 유지하기 위해 사용
+   * Query parameters to include when generating links (filters, sorts, includes, etc.)
+   * Used to maintain existing query conditions in pagination links
    */
   queryParams?: Record<string, string>;
 }
 
 /**
- * JSON:API 직렬화 서비스
+ * JSON:API serialization service
  *
- * 엔티티를 JSON:API 1.1 문서 형식으로 변환합니다.
+ * Converts entities to JSON:API 1.1 document format.
  *
  * @remarks
- * 주요 기능:
- * - 단일 리소스 직렬화 (serializeOne)
- * - 컬렉션 직렬화 (serializeMany)
- * - null 리소스 직렬화 (serializeNull)
- * - 관계 리소스 included 처리 (순환 참조 방지)
- * - Sparse Fieldsets 지원
- * - 페이지네이션 링크 생성
+ * Main features:
+ * - Single resource serialization (serializeOne)
+ * - Collection serialization (serializeMany)
+ * - Null resource serialization (serializeNull)
+ * - Relationship resource included handling (circular reference prevention)
+ * - Sparse Fieldsets support
+ * - Pagination link generation
  *
  * @example
  * ```typescript
- * // 단일 리소스 직렬화
+ * // Single resource serialization
  * const document = serializerService.serializeOne(article, ArticleSerializer, {
  *   baseUrl: 'https://api.example.com',
  *   included: [{ relationName: 'author', data: article.author }],
  * });
  *
- * // 컬렉션 직렬화
+ * // Collection serialization
  * const document = serializerService.serializeMany(articles, ArticleSerializer, {
  *   baseUrl: 'https://api.example.com',
  *   pagination: { offset: 0, limit: 20, total: 100 },
@@ -103,22 +103,22 @@ export interface SerializeManyOptions extends SerializeOptions {
 @Injectable()
 export class JsonApiSerializerService {
   /**
-   * 단일 리소스 직렬화
+   * Serialize single resource
    *
-   * null 데이터 처리 지원 - JSON:API 1.1 명세에 따라 data: null 반환
+   * Supports null data handling - returns data: null per JSON:API 1.1 spec
    *
-   * @template T 리소스 타입
-   * @param data 직렬화할 데이터 (null 가능)
-   * @param serializerClass Serializer 클래스
-   * @param options 직렬화 옵션
-   * @returns JSON:API 문서
+   * @template T Resource type
+   * @param data Data to serialize (nullable)
+   * @param serializerClass Serializer class
+   * @param options Serialization options
+   * @returns JSON:API document
    */
   serializeOne<T>(
     data: T | null,
     serializerClass: Type<any>,
     options: SerializeOptions = {},
   ): JsonApiDocument<T> {
-    // null 데이터 처리 - toResource 호출 전에 체크하여 크래시 방지
+    // Null data handling - check before calling toResource to prevent crash
     if (data === null) {
       return this.serializeNull(options.meta);
     }
@@ -147,13 +147,13 @@ export class JsonApiSerializerService {
   }
 
   /**
-   * 컬렉션 직렬화
+   * Serialize collection
    *
-   * @template T 리소스 타입
-   * @param data 직렬화할 데이터 배열
-   * @param serializerClass Serializer 클래스
-   * @param options 직렬화 옵션
-   * @returns JSON:API 문서
+   * @template T Resource type
+   * @param data Data array to serialize
+   * @param serializerClass Serializer class
+   * @param options Serialization options
+   * @returns JSON:API document
    */
   serializeMany<T>(
     data: T[],
@@ -206,10 +206,10 @@ export class JsonApiSerializerService {
   }
 
   /**
-   * null 리소스 직렬화 (삭제 등)
+   * Serialize null resource (for delete, etc.)
    *
-   * @param meta 추가 메타 정보
-   * @returns JSON:API 문서 (data: null)
+   * @param meta Additional meta information
+   * @returns JSON:API document (data: null)
    */
   serializeNull(meta?: JsonApiMeta): JsonApiDocument {
     const document: JsonApiDocument = {
@@ -225,17 +225,17 @@ export class JsonApiSerializerService {
   }
 
   /**
-   * included 배열 직렬화
+   * Serialize included array
    *
-   * 순환 참조 방지를 위해 이미 처리된 리소스를 추적합니다.
+   * Tracks already processed resources to prevent circular references.
    *
    * @remarks
-   * - IncludedResource[] 형태면 관계명으로 정확한 serializer 매칭
-   * - any[] 형태면 모든 relationship을 순회하여 매칭 (하위 호환)
+   * - IncludedResource[] format uses relationship name for accurate serializer matching
+   * - any[] format iterates all relationships for matching (backward compatible)
    *
-   * @param included included 리소스 배열
-   * @param parentSerializerClass 부모 Serializer 클래스
-   * @returns JSON:API 리소스 배열
+   * @param included Included resource array
+   * @param parentSerializerClass Parent Serializer class
+   * @returns JSON:API resource array
    */
   private serializeIncluded(
     included: IncludedResource[] | any[],
@@ -244,7 +244,7 @@ export class JsonApiSerializerService {
     const relationships: RelationshipMetadata[] =
       Reflect.getMetadata(JSON_API_RELATIONSHIPS, parentSerializerClass) || [];
 
-    // 관계명 → serializer 매핑 생성
+    // Create relationship name → serializer mapping
     const relationSerializerMap = new Map<string, Type<any>>();
     for (const rel of relationships) {
       const name = rel.name || rel.propertyKey;
@@ -252,13 +252,13 @@ export class JsonApiSerializerService {
     }
 
     const result: JsonApiResource[] = [];
-    // 순환 참조 방지를 위한 Set (type:id 형식으로 추적)
+    // Set for circular reference prevention (tracked as type:id format)
     const seen = new Set<string>();
 
     for (const item of included) {
       if (!item) continue;
 
-      // IncludedResource 형태인지 확인
+      // Check if IncludedResource format
       const isIncludedResource =
         item &&
         typeof item === 'object' &&
@@ -266,7 +266,7 @@ export class JsonApiSerializerService {
         'data' in item;
 
       if (isIncludedResource) {
-        // 정확한 매칭: 관계명으로 serializer 찾기
+        // Accurate matching: find serializer by relationship name
         const { relationName, data } = item as IncludedResource;
         if (!data || !data.id) continue;
 
@@ -277,14 +277,14 @@ export class JsonApiSerializerService {
             serializer,
           );
           const key = `${serializerOptions?.type || relationName}:${data.id}`;
-          // 순환 참조 방지: 이미 처리된 리소스는 건너뜀
+          // Circular reference prevention: skip already processed resources
           if (!seen.has(key)) {
             seen.add(key);
             result.push(this.toResource(data, serializer));
           }
         }
       } else {
-        // 하위 호환: 기존 any[] 방식
+        // Backward compatible: existing any[] approach
         if (!item.id) continue;
 
         for (const rel of relationships) {
@@ -296,11 +296,11 @@ export class JsonApiSerializerService {
 
           if (relOptions?.type) {
             const key = `${relOptions.type}:${item.id}`;
-            // 순환 참조 방지: 이미 처리된 리소스는 건너뜀
+            // Circular reference prevention: skip already processed resources
             if (!seen.has(key)) {
               seen.add(key);
               result.push(this.toResource(item, relSerializer));
-              break; // 첫 번째 매칭에서 중단
+              break; // Stop at first match
             }
           }
         }
@@ -311,13 +311,13 @@ export class JsonApiSerializerService {
   }
 
   /**
-   * 엔티티를 JSON:API Resource로 변환
+   * Convert entity to JSON:API Resource
    *
-   * @template T 리소스 타입
-   * @param data 변환할 데이터
-   * @param serializerClass Serializer 클래스
-   * @param sparseFields Sparse Fieldsets (선택할 필드 목록)
-   * @returns JSON:API 리소스
+   * @template T Resource type
+   * @param data Data to convert
+   * @param serializerClass Serializer class
+   * @param sparseFields Sparse Fieldsets (list of fields to select)
+   * @returns JSON:API resource
    */
   private toResource<T>(
     data: T,
@@ -336,14 +336,14 @@ export class JsonApiSerializerService {
     const type = serializerOptions?.type || 'unknown';
     const id = String((data as any).id);
 
-    // Attributes 추출
+    // Extract attributes
     const attrs: Record<string, unknown> = {};
     for (const attr of attributes) {
       if (attr.exclude) continue;
 
       const name = attr.name || toKebabCase(attr.propertyKey);
 
-      // Sparse fieldsets 적용
+      // Apply sparse fieldsets
       if (
         sparseFields &&
         sparseFields.length > 0 &&
@@ -354,12 +354,12 @@ export class JsonApiSerializerService {
 
       const value = (data as any)[attr.propertyKey];
       if (value !== undefined) {
-        // Date 객체는 ISO 8601 문자열로 변환
+        // Convert Date objects to ISO 8601 string
         attrs[name] = value instanceof Date ? value.toISOString() : value;
       }
     }
 
-    // Relationships 추출
+    // Extract relationships
     const rels: Record<string, any> = {};
     for (const rel of relationships) {
       const name = rel.name || toKebabCase(rel.propertyKey);
@@ -407,12 +407,12 @@ export class JsonApiSerializerService {
   }
 
   /**
-   * 단일 리소스 링크 생성
+   * Generate single resource links
    *
-   * @param baseUrl 기본 URL
-   * @param type 리소스 타입
-   * @param id 리소스 ID
-   * @returns JSON:API 링크 객체
+   * @param baseUrl Base URL
+   * @param type Resource type
+   * @param id Resource ID
+   * @returns JSON:API links object
    */
   private buildLinks(
     baseUrl: string | undefined,
@@ -428,13 +428,13 @@ export class JsonApiSerializerService {
   }
 
   /**
-   * 컬렉션 링크 생성 (페이지네이션 및 쿼리 파라미터 포함)
+   * Generate collection links (with pagination and query parameters)
    *
-   * @param baseUrl 기본 URL
-   * @param type 리소스 타입
-   * @param pagination 페이지네이션 정보
-   * @param queryParams 쿼리 파라미터
-   * @returns JSON:API 링크 객체
+   * @param baseUrl Base URL
+   * @param type Resource type
+   * @param pagination Pagination information
+   * @param queryParams Query parameters
+   * @returns JSON:API links object
    */
   private buildCollectionLinks(
     baseUrl: string | undefined,
@@ -446,13 +446,13 @@ export class JsonApiSerializerService {
       return {};
     }
 
-    // 페이지네이션 관련 파라미터를 제외한 쿼리 스트링 생성
+    // Generate query string excluding pagination-related parameters
     const buildQueryString = (
       additionalParams?: Record<string, string>,
     ): string => {
       const params = new URLSearchParams();
 
-      // 기존 쿼리 파라미터 추가 (page 관련 제외)
+      // Add existing query parameters (excluding page-related)
       if (queryParams) {
         Object.entries(queryParams).forEach(([key, value]) => {
           if (!key.startsWith('page[')) {
@@ -461,7 +461,7 @@ export class JsonApiSerializerService {
         });
       }
 
-      // 추가 파라미터 (페이지네이션) 추가
+      // Add additional parameters (pagination)
       if (additionalParams) {
         Object.entries(additionalParams).forEach(([key, value]) => {
           params.append(key, value);

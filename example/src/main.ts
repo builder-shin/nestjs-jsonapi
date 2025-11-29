@@ -3,16 +3,16 @@ import { ValidationPipe, Logger } from "@nestjs/common";
 import { AppModule } from "./app.module";
 
 /**
- * NestJS JSON:API 예제 애플리케이션 진입점
+ * NestJS JSON:API Example Application Entry Point
  */
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
 
-  // 참고: JSON:API 필터링을 위한 Express 확장 쿼리 파서는
-  // JsonApiModule에서 자동으로 설정됩니다.
+  // Note: The extended Express query parser for JSON:API filtering
+  // is automatically configured by JsonApiModule.
 
-  // 전역 유효성 검사 파이프 설정
+  // Global validation pipe configuration
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -24,31 +24,31 @@ async function bootstrap() {
     })
   );
 
-  // CORS 활성화 (개발 환경)
+  // Enable CORS (development environment)
   app.enableCors();
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  logger.log(`🚀 애플리케이션이 http://localhost:${port} 에서 실행 중입니다`);
-  logger.log(`📚 JSON:API 엔드포인트:`);
-  logger.log(`   - GET    /users          - 사용자 목록`);
-  logger.log(`   - GET    /users/:id      - 사용자 상세`);
-  logger.log(`   - POST   /users          - 사용자 생성`);
-  logger.log(`   - PATCH  /users/:id      - 사용자 수정`);
-  logger.log(`   - DELETE /users/:id      - 사용자 삭제`);
-  logger.log(`   - GET    /articles       - 게시글 목록`);
-  logger.log(`   - GET    /articles/:id   - 게시글 상세`);
-  logger.log(`   - POST   /articles       - 게시글 생성`);
-  logger.log(`   - PATCH  /articles/:id   - 게시글 수정`);
-  logger.log(`   - DELETE /articles/:id   - 게시글 삭제`);
-  logger.log(`   - POST   /articles/:id/publish - 게시글 발행`);
-  logger.log(`   - POST   /articles/:id/archive - 게시글 보관`);
-  logger.log(`   - GET    /comments       - 댓글 목록`);
-  logger.log(`   - GET    /comments/:id   - 댓글 상세`);
-  logger.log(`   - POST   /comments       - 댓글 생성`);
-  logger.log(`   - PATCH  /comments/:id   - 댓글 수정`);
-  logger.log(`   - DELETE /comments/:id   - 댓글 삭제`);
+  logger.log(`🚀 Application is running at http://localhost:${port}`);
+  logger.log(`📚 JSON:API Endpoints:`);
+  logger.log(`   - GET    /users          - List users`);
+  logger.log(`   - GET    /users/:id      - Get user details`);
+  logger.log(`   - POST   /users          - Create user`);
+  logger.log(`   - PATCH  /users/:id      - Update user`);
+  logger.log(`   - DELETE /users/:id      - Delete user`);
+  logger.log(`   - GET    /articles       - List articles`);
+  logger.log(`   - GET    /articles/:id   - Get article details`);
+  logger.log(`   - POST   /articles       - Create article`);
+  logger.log(`   - PATCH  /articles/:id   - Update article`);
+  logger.log(`   - DELETE /articles/:id   - Delete article`);
+  logger.log(`   - POST   /articles/:id/publish - Publish article`);
+  logger.log(`   - POST   /articles/:id/archive - Archive article`);
+  logger.log(`   - GET    /comments       - List comments`);
+  logger.log(`   - GET    /comments/:id   - Get comment details`);
+  logger.log(`   - POST   /comments       - Create comment`);
+  logger.log(`   - PATCH  /comments/:id   - Update comment`);
+  logger.log(`   - DELETE /comments/:id   - Delete comment`);
 }
 
 bootstrap();

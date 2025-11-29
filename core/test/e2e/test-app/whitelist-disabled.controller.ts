@@ -1,7 +1,7 @@
 /**
- * Whitelist E2E 테스트용 컨트롤러 (모든 쿼리 비활성화)
+ * Whitelist E2E Test Controller (all queries disabled)
  *
- * 모든 필터, 정렬, include를 비활성화합니다.
+ * Disables all filters, sorts, and includes.
  */
 import { Controller } from '@nestjs/common';
 import {
@@ -23,13 +23,13 @@ import { CreateArticleDto, UpdateArticleDto } from './article.dto';
     update: UpdateArticleDto,
   },
   query: {
-    // 빈 배열: 모든 필터 비활성화
+    // Empty array: disable all filters
     allowedFilters: [],
-    // 빈 배열: 모든 정렬 비활성화
+    // Empty array: disable all sorts
     allowedSorts: [],
-    // 빈 배열: 모든 include 비활성화
+    // Empty array: disable all includes
     allowedIncludes: [],
-    // 에러 모드로 설정하여 비활성화 검증
+    // Set to error mode to verify disabled state
     onDisallowed: 'error',
   },
 })

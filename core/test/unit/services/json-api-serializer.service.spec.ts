@@ -3,7 +3,7 @@ import { JsonApiSerializerService } from '../../../src/services/json-api-seriali
 import { JsonApiSerializer, Attribute } from '../../../src';
 import { JsonApiResource } from '../../../src/interfaces/json-api.interface';
 
-// 테스트용 Serializer 정의
+// Test Serializer definition
 @JsonApiSerializer({ type: 'articles' })
 class TestArticleSerializer {
   @Attribute()
@@ -20,8 +20,8 @@ describe('JsonApiSerializerService', () => {
   let service: JsonApiSerializerService;
 
   beforeEach(async () => {
-    // JsonApiSerializerService는 생성자 주입이 없으므로
-    // JSON_API_MODULE_OPTIONS provider는 불필요
+    // Since JsonApiSerializerService has no constructor injection,
+    // JSON_API_MODULE_OPTIONS provider is unnecessary
     const module: TestingModule = await Test.createTestingModule({
       providers: [JsonApiSerializerService],
     }).compile();
@@ -43,8 +43,8 @@ describe('JsonApiSerializerService', () => {
       });
 
       expect(result.jsonapi.version).toBe('1.1');
-      // 주의: toResource는 개별 리소스에 links를 추가하지 않음
-      // links는 document 수준(result.links)에만 존재
+      // Note: toResource doesn't add links to individual resources
+      // links only exist at the document level (result.links)
       expect(result.data).toEqual({
         type: 'articles',
         id: '1',
@@ -54,7 +54,7 @@ describe('JsonApiSerializerService', () => {
           'created-at': '2024-01-01T00:00:00.000Z',
         },
       });
-      // document 수준의 links 검증
+      // Document level links verification
       expect(result.links?.self).toBe('http://localhost:3000/articles/1');
     });
 
@@ -117,7 +117,7 @@ describe('JsonApiSerializerService', () => {
         baseUrl: 'http://localhost:3000',
       });
 
-      // createdAt이 created-at으로 변환되어야 함
+      // createdAt should be converted to created-at
       const data = result.data as JsonApiResource<typeof article>;
       expect(data?.attributes).toHaveProperty('created-at');
       expect(data?.attributes).not.toHaveProperty('createdAt');

@@ -1,10 +1,10 @@
 /**
- * Prisma 어댑터 서비스
+ * Prisma adapter service
  *
  * @packageDocumentation
  * @module services
  *
- * 의존성: constants/metadata.constants.ts, exceptions/json-api-validation.exception.ts
+ * Dependencies: constants/metadata.constants.ts, exceptions/json-api-validation.exception.ts
  */
 
 import { Injectable, Inject, Optional } from '@nestjs/common';
@@ -12,48 +12,48 @@ import { PRISMA_SERVICE_TOKEN } from '../constants';
 import { isPrismaError, handlePrismaError } from '../exceptions';
 
 /**
- * findMany 옵션 인터페이스
+ * findMany options interface
  */
 export interface FindManyOptions {
-  /** WHERE 조건 */
+  /** WHERE condition */
   where?: Record<string, unknown>;
-  /** 관계 포함 설정 */
+  /** Relationship include settings */
   include?: Record<string, boolean | object>;
-  /** 정렬 설정 */
+  /** Sort settings */
   orderBy?: Record<string, 'asc' | 'desc'> | Record<string, 'asc' | 'desc'>[];
-  /** 건너뛸 레코드 수 */
+  /** Number of records to skip */
   skip?: number;
-  /** 가져올 레코드 수 */
+  /** Number of records to take */
   take?: number;
-  /** 필드 선택 */
+  /** Field selection */
   select?: Record<string, boolean>;
 }
 
 /**
- * findOne 옵션 인터페이스
+ * findOne options interface
  */
 export interface FindOneOptions {
-  /** WHERE 조건 (필수) */
+  /** WHERE condition (required) */
   where: Record<string, unknown>;
-  /** 관계 포함 설정 */
+  /** Relationship include settings */
   include?: Record<string, boolean | object>;
-  /** 필드 선택 */
+  /** Field selection */
   select?: Record<string, boolean>;
 }
 
 /**
- * Prisma 어댑터 서비스
+ * Prisma adapter service
  *
- * Prisma Client와 상호작용하는 추상화 레이어입니다.
- * 모든 CRUD 작업에서 Prisma 에러를 JSON:API 형식으로 변환합니다.
+ * Abstraction layer for interacting with Prisma Client.
+ * Converts Prisma errors to JSON:API format for all CRUD operations.
  *
  * @remarks
- * 이 서비스는 JSON_API_MODULE_OPTIONS를 직접 사용하지 않습니다.
- * 모듈 옵션(idType 등)은 컨트롤러 레벨에서 처리됩니다.
+ * This service does not directly use JSON_API_MODULE_OPTIONS.
+ * Module options (idType, etc.) are handled at the controller level.
  *
  * @example
  * ```typescript
- * // 의존성 주입을 통한 사용
+ * // Usage through dependency injection
  * @Injectable()
  * class MyService {
  *   constructor(private readonly prismaAdapter: PrismaAdapterService) {}
@@ -73,21 +73,21 @@ export class PrismaAdapterService {
   ) {}
 
   /**
-   * Prisma 클라이언트 설정 (동적 주입용)
+   * Set Prisma client (for dynamic injection)
    *
-   * @param prisma Prisma Client 인스턴스
+   * @param prisma Prisma Client instance
    */
   setPrismaClient(prisma: any): void {
     this.prisma = prisma;
   }
 
   /**
-   * 여러 레코드 조회
+   * Query multiple records
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param options 조회 옵션
-   * @returns 조회된 레코드 배열
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param options Query options
+   * @returns Array of queried records
    */
   async findMany<T = any>(
     model: string,
@@ -98,12 +98,12 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 단일 레코드 조회 (고유 키 기반)
+   * Query single record (by unique key)
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param options 조회 옵션 (where 필수)
-   * @returns 조회된 레코드 또는 null
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param options Query options (where required)
+   * @returns Queried record or null
    */
   async findOne<T = any>(
     model: string,
@@ -114,12 +114,12 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 조건에 맞는 첫 번째 레코드 조회
+   * Query first record matching condition
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param options 조회 옵션
-   * @returns 조회된 레코드 또는 null
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param options Query options
+   * @returns Queried record or null
    */
   async findFirst<T = any>(
     model: string,
@@ -130,11 +130,11 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 레코드 개수 조회
+   * Count records
    *
-   * @param model Prisma 모델명 (소문자)
-   * @param where WHERE 조건
-   * @returns 레코드 개수
+   * @param model Prisma model name (lowercase)
+   * @param where WHERE condition
+   * @returns Record count
    */
   async count(model: string, where?: Record<string, unknown>): Promise<number> {
     const delegate = this.getModelDelegate(model);
@@ -142,14 +142,14 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 단일 레코드 생성
+   * Create single record
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param data 생성할 데이터
-   * @param include 관계 포함 설정
-   * @returns 생성된 레코드
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param data Data to create
+   * @param include Relationship include settings
+   * @returns Created record
+   * @throws JSON:API format exception on Prisma error
    */
   async create<T = any>(
     model: string,
@@ -168,12 +168,12 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 여러 레코드 생성
+   * Create multiple records
    *
-   * @param model Prisma 모델명 (소문자)
-   * @param data 생성할 데이터 배열
-   * @returns 생성된 레코드 수
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @param model Prisma model name (lowercase)
+   * @param data Array of data to create
+   * @returns Number of created records
+   * @throws JSON:API format exception on Prisma error
    */
   async createMany(
     model: string,
@@ -191,24 +191,24 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 여러 레코드 생성 후 조회 (트랜잭션)
+   * Create multiple records and return them (transaction)
    *
    * @remarks
-   * - Prisma 5.14.0+ 에서 createManyAndReturn 네이티브 지원
-   * - 이전 버전에서는 트랜잭션 컨텍스트 내에서 개별 생성 후 반환
+   * - Prisma 5.14.0+ natively supports createManyAndReturn
+   * - For earlier versions, creates individually within transaction context and returns
    *
    * @performance
-   * Fallback 동작 시 interactive transaction을 사용하여
-   * 트랜잭션 격리를 보장합니다. 트랜잭션 컨텍스트(tx) 내에서
-   * 모든 create 작업이 순차적으로 실행되며, 하나라도 실패하면
-   * 전체가 롤백됩니다.
+   * Fallback behavior uses interactive transaction to ensure
+   * transaction isolation. All create operations execute sequentially
+   * within transaction context (tx), and if any fails,
+   * the entire operation is rolled back.
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param data 생성할 데이터 배열
-   * @param include 관계 포함 설정
-   * @returns 생성된 레코드 배열
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param data Array of data to create
+   * @param include Relationship include settings
+   * @returns Array of created records
+   * @throws JSON:API format exception on Prisma error
    */
   async createManyAndReturn<T = any>(
     model: string,
@@ -218,14 +218,14 @@ export class PrismaAdapterService {
     try {
       const delegate = this.getModelDelegate(model);
 
-      // Prisma 5.14.0+ 에서 createManyAndReturn 지원
+      // Prisma 5.14.0+ supports createManyAndReturn
       if (typeof delegate.createManyAndReturn === 'function') {
         return await delegate.createManyAndReturn({ data, include });
       }
 
-      // Fallback: Interactive transaction으로 개별 생성
-      // 트랜잭션 컨텍스트(tx) 내에서 모든 작업을 수행하여
-      // 트랜잭션 격리를 보장합니다.
+      // Fallback: Create individually with interactive transaction
+      // All operations are performed within transaction context (tx)
+      // to ensure transaction isolation.
       return await this.prisma.$transaction(async (tx: any) => {
         const txDelegate = tx[model];
         const results: T[] = [];
@@ -246,15 +246,15 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 단일 레코드 업데이트
+   * Update single record
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param where WHERE 조건
-   * @param data 업데이트할 데이터
-   * @param include 관계 포함 설정
-   * @returns 업데이트된 레코드
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param where WHERE condition
+   * @param data Data to update
+   * @param include Relationship include settings
+   * @returns Updated record
+   * @throws JSON:API format exception on Prisma error
    */
   async update<T = any>(
     model: string,
@@ -274,13 +274,13 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 여러 레코드 업데이트
+   * Update multiple records
    *
-   * @param model Prisma 모델명 (소문자)
-   * @param where WHERE 조건
-   * @param data 업데이트할 데이터
-   * @returns 업데이트된 레코드 수
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @param model Prisma model name (lowercase)
+   * @param where WHERE condition
+   * @param data Data to update
+   * @returns Number of updated records
+   * @throws JSON:API format exception on Prisma error
    */
   async updateMany(
     model: string,
@@ -299,16 +299,16 @@ export class PrismaAdapterService {
   }
 
   /**
-   * Upsert (존재하면 업데이트, 없으면 생성)
+   * Upsert (update if exists, create if not)
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param where WHERE 조건
-   * @param create 생성 시 데이터
-   * @param update 업데이트 시 데이터
-   * @param include 관계 포함 설정
-   * @returns 생성 또는 업데이트된 레코드
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param where WHERE condition
+   * @param create Data for creation
+   * @param update Data for update
+   * @param include Relationship include settings
+   * @returns Created or updated record
+   * @throws JSON:API format exception on Prisma error
    */
   async upsert<T = any>(
     model: string,
@@ -329,13 +329,13 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 단일 레코드 삭제
+   * Delete single record
    *
-   * @template T 반환 타입
-   * @param model Prisma 모델명 (소문자)
-   * @param where WHERE 조건
-   * @returns 삭제된 레코드
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @template T Return type
+   * @param model Prisma model name (lowercase)
+   * @param where WHERE condition
+   * @returns Deleted record
+   * @throws JSON:API format exception on Prisma error
    */
   async delete<T = any>(
     model: string,
@@ -353,12 +353,12 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 여러 레코드 삭제
+   * Delete multiple records
    *
-   * @param model Prisma 모델명 (소문자)
-   * @param where WHERE 조건
-   * @returns 삭제된 레코드 수
-   * @throws Prisma 에러 발생 시 JSON:API 형식 예외
+   * @param model Prisma model name (lowercase)
+   * @param where WHERE condition
+   * @returns Number of deleted records
+   * @throws JSON:API format exception on Prisma error
    */
   async deleteMany(
     model: string,
@@ -376,22 +376,22 @@ export class PrismaAdapterService {
   }
 
   /**
-   * 트랜잭션 실행
+   * Execute transaction
    *
-   * @template T 반환 타입
-   * @param fn 트랜잭션 콜백 함수
-   * @returns 트랜잭션 결과
+   * @template T Return type
+   * @param fn Transaction callback function
+   * @returns Transaction result
    */
   async transaction<T>(fn: (tx: any) => Promise<T>): Promise<T> {
     return this.prisma.$transaction(fn);
   }
 
   /**
-   * Prisma 모델 delegate 획득
+   * Get Prisma model delegate
    *
-   * @param model Prisma 모델명 (소문자)
+   * @param model Prisma model name (lowercase)
    * @returns Prisma model delegate
-   * @throws Prisma 클라이언트가 초기화되지 않았거나 모델이 없는 경우
+   * @throws If Prisma client not initialized or model not found
    */
   private getModelDelegate(model: string): any {
     if (!this.prisma) {

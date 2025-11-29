@@ -3,18 +3,18 @@ import { IsString, IsOptional, IsEmail, IsIn } from "class-validator";
 /**
  * UpdateUserDto
  *
- * 사용자 수정 요청 데이터 검증 DTO
+ * DTO for validating user update request data
  */
 export class UpdateUserDto {
   @IsOptional()
-  @IsEmail({}, { message: "유효한 이메일 주소를 입력해주세요" })
+  @IsEmail({}, { message: "Please enter a valid email address" })
   email?: string;
 
   @IsOptional()
-  @IsString({ message: "이름은 문자열이어야 합니다" })
+  @IsString({ message: "Name must be a string" })
   name?: string;
 
   @IsOptional()
-  @IsIn(["admin", "user"], { message: "역할은 admin 또는 user여야 합니다" })
+  @IsIn(["admin", "user"], { message: "Role must be either admin or user" })
   role?: string;
 }

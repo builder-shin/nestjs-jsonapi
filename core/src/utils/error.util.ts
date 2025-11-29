@@ -1,26 +1,26 @@
 /**
- * 에러 유틸리티 함수
+ * Error Utility Functions
  *
  * @packageDocumentation
  * @module utils
  *
- * 의존성: 없음
+ * Dependencies: none
  */
 
 import { randomUUID } from 'crypto';
 
 /**
- * 고유한 에러 ID 생성
+ * Generate Unique Error ID
  *
- * JSON:API 에러 응답에서 각 에러를 고유하게 식별하기 위한 UUID를 생성합니다.
- * crypto.randomUUID()를 사용하여 충돌을 방지합니다.
+ * Generates a UUID to uniquely identify each error in JSON:API error responses.
+ * Uses crypto.randomUUID() to prevent collisions.
  *
- * @returns 고유한 에러 식별자 (UUID v4 형식)
+ * @returns Unique error identifier (UUID v4 format)
  *
  * @example
  * ```typescript
  * const errorId = generateErrorId();
- * // 예: "550e8400-e29b-41d4-a716-446655440000"
+ * // e.g., "550e8400-e29b-41d4-a716-446655440000"
  * ```
  */
 export function generateErrorId(): string {

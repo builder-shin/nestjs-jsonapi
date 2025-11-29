@@ -1,5 +1,5 @@
 /**
- * JSON:API 컨트롤러 데코레이터
+ * JSON:API Controller Decorator
  *
  * @packageDocumentation
  * @module decorators
@@ -15,12 +15,12 @@ import { JsonApiControllerOptions } from '../interfaces';
 import { JSON_API_CONTROLLER_OPTIONS } from '../constants';
 
 /**
- * JSON:API 컨트롤러 데코레이터
+ * JSON:API Controller Decorator
  *
- * 컨트롤러에 JSON:API 설정을 등록합니다.
- * JsonApiCrudController와 함께 사용하여 자동 CRUD 엔드포인트를 생성합니다.
+ * Registers JSON:API configuration on a controller.
+ * Use with JsonApiCrudController to auto-generate CRUD endpoints.
  *
- * @param options - 컨트롤러 옵션
+ * @param options - Controller options
  * @returns ClassDecorator
  *
  * @example
@@ -40,24 +40,24 @@ import { JSON_API_CONTROLLER_OPTIONS } from '../constants';
  *
  * @example
  * ```typescript
- * // 커스텀 리소스 타입 지정
+ * // Custom resource type specification
  * @Controller('posts')
  * @JsonApiController({
  *   model: 'article',
  *   serializer: ArticleSerializer,
- *   type: 'blog-posts',  // JSON:API type 필드에 사용될 값
+ *   type: 'blog-posts',  // Value used for JSON:API type field
  * })
  * export class PostsController extends JsonApiCrudController {}
  * ```
  *
  * @example
  * ```typescript
- * // 특정 액션 제외
+ * // Exclude specific actions
  * @Controller('comments')
  * @JsonApiController({
  *   model: 'comment',
  *   serializer: CommentSerializer,
- *   except: ['delete', 'deleteMany'],  // 삭제 비활성화
+ *   except: ['delete', 'deleteMany'],  // Disable deletion
  * })
  * export class CommentsController extends JsonApiCrudController {}
  * ```

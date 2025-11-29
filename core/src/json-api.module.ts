@@ -1,18 +1,18 @@
 /**
- * JSON:API 모듈
+ * JSON:API Module
  *
  * @packageDocumentation
  * @module json-api
  *
- * 의존성:
+ * Dependencies:
  * - @nestjs/common: Module, DynamicModule, Global, Provider, Type
  * - @nestjs/core: APP_FILTER, APP_GUARD, APP_INTERCEPTOR
- * - interfaces/*: 모듈 옵션 타입
+ * - interfaces/*: Module options types
  * - services/*: PrismaAdapter, QueryService, SerializerService
  * - guards/*: ContentTypeGuard
  * - interceptors/*: ResponseInterceptor
  * - filters/*: ExceptionFilter
- * - constants/*: 메타데이터 상수
+ * - constants/*: Metadata constants
  */
 
 import {
@@ -35,13 +35,13 @@ import { JsonApiContentTypeGuard } from "./guards/json-api-content-type.guard";
 import { JSON_API_MODULE_OPTIONS, PRISMA_SERVICE_TOKEN } from "./constants";
 
 /**
- * JSON:API 모듈
+ * JSON:API Module
  *
- * NestJS 애플리케이션에 JSON:API 1.1 지원을 추가합니다.
+ * Adds JSON:API 1.1 support to NestJS applications.
  *
  * @example
  * ```typescript
- * // 동기 설정
+ * // Synchronous configuration
  * @Module({
  *   imports: [
  *     JsonApiModule.forRoot({
@@ -53,7 +53,7 @@ import { JSON_API_MODULE_OPTIONS, PRISMA_SERVICE_TOKEN } from "./constants";
  * })
  * export class AppModule {}
  *
- * // 비동기 설정
+ * // Asynchronous configuration
  * @Module({
  *   imports: [
  *     JsonApiModule.forRootAsync({
@@ -81,24 +81,24 @@ export class JsonApiModule implements OnModuleInit {
   constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
 
   /**
-   * 모듈 초기화 시 Express 쿼리 파서를 확장 모드로 설정
+   * Sets Express query parser to extended mode on module initialization
    *
-   * JSON:API 필터링(filter[field][operator]=value)을 위해
-   * 중첩된 쿼리 파라미터를 객체로 파싱할 수 있어야 합니다.
+   * For JSON:API filtering (filter[field][operator]=value),
+   * nested query parameters must be parseable as objects.
    */
   onModuleInit() {
     const httpAdapter = this.httpAdapterHost?.httpAdapter;
     if (httpAdapter) {
       const instance = httpAdapter.getInstance();
-      // Express 확장 쿼리 파서 설정 (qs 라이브러리 사용)
+      // Set Express extended query parser (uses qs library)
       // filter[status]=draft → { filter: { status: 'draft' } }
       instance.set("query parser", "extended");
-      this.logger.log("Express 확장 쿼리 파서 설정 완료 (JSON:API 필터링 지원)");
+      this.logger.log("Express extended query parser configured (JSON:API filtering support)");
     }
   }
 
   /**
-   * 동기 모듈 설정
+   * Synchronous module configuration
    *
    * @example
    * JsonApiModule.forRoot({
@@ -107,8 +107,8 @@ export class JsonApiModule implements OnModuleInit {
    * })
    */
   static forRoot(options: JsonApiModuleOptions): DynamicModule {
-    // prismaServiceToken은 클래스 또는 문자열 토큰을 받을 수 있음
-    // 문자열 토큰 사용 시, 해당 토큰으로 등록된 Provider가 imports에 있어야 함
+    // prismaServiceToken can accept a class or string token
+    // When using a string token, a Provider registered with that token must be in imports
     const prismaToken = options.prismaServiceToken;
 
     const providers: Provider[] = [
@@ -133,7 +133,7 @@ export class JsonApiModule implements OnModuleInit {
       },
     ];
 
-    // Prisma 서비스 토큰이 제공된 경우에만 연결
+    // Connect only when Prisma service token is provided
     if (prismaToken) {
       providers.push({
         provide: PRISMA_SERVICE_TOKEN,
@@ -141,8 +141,8 @@ export class JsonApiModule implements OnModuleInit {
       });
     }
 
-    // exports 배열 구성
-    // PRISMA_SERVICE_TOKEN은 실제로 제공된 경우에만 export
+    // Construct exports array
+    // PRISMA_SERVICE_TOKEN is only exported when actually provided
     const exports: Array<string | symbol | Type<any>> = [
       JSON_API_MODULE_OPTIONS,
       PrismaAdapterService,
@@ -162,12 +162,12 @@ export class JsonApiModule implements OnModuleInit {
   }
 
   /**
-   * 비동기 모듈 설정
+   * Asynchronous module configuration
    *
    * @example
    * JsonApiModule.forRootAsync({
    *   imports: [ConfigModule, PrismaModule],
-   *   prismaServiceToken: PrismaService, // 클래스 토큰 권장
+   *   prismaServiceToken: PrismaService, // Class token recommended
    *   useFactory: (config: ConfigService) => ({
    *     pagination: {
    *       defaultLimit: config.get('PAGINATION_DEFAULT_LIMIT', 20),
@@ -182,7 +182,7 @@ export class JsonApiModule implements OnModuleInit {
     const prismaToken = options.prismaServiceToken;
 
     const providers: Provider[] = [
-      // 모듈 옵션 비동기 제공
+      // Provide module options asynchronously
       {
         provide: JSON_API_MODULE_OPTIONS,
         useFactory: options.useFactory,
@@ -206,8 +206,8 @@ export class JsonApiModule implements OnModuleInit {
       },
     ];
 
-    // Prisma 서비스 토큰이 제공된 경우에만 연결
-    // 클래스 토큰(PrismaService) 또는 문자열 토큰('PRISMA_SERVICE') 모두 지원
+    // Connect only when Prisma service token is provided
+    // Supports both class tokens (PrismaService) and string tokens ('PRISMA_SERVICE')
     if (prismaToken) {
       providers.push({
         provide: PRISMA_SERVICE_TOKEN,
@@ -215,9 +215,9 @@ export class JsonApiModule implements OnModuleInit {
       });
     }
 
-    // exports 배열 구성
-    // PRISMA_SERVICE_TOKEN은 실제로 제공된 경우에만 export하여
-    // 다른 모듈에서 존재하지 않는 토큰을 주입하려는 에러 방지
+    // Construct exports array
+    // PRISMA_SERVICE_TOKEN is only exported when actually provided
+    // to prevent errors when other modules try to inject a non-existent token
     const exports: Array<string | symbol | Type<any>> = [
       JSON_API_MODULE_OPTIONS,
       PrismaAdapterService,

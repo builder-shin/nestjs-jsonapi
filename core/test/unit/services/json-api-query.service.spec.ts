@@ -177,7 +177,7 @@ describe('JsonApiQueryService', () => {
     });
   });
 
-  describe('보안: 쿼리 인젝션 방지', () => {
+  describe('Security: Query Injection Prevention', () => {
     it('should ignore invalid field names in filter', () => {
       const request = {
         query: {
@@ -191,7 +191,7 @@ describe('JsonApiQueryService', () => {
       } as any;
       const result = service.parse(request);
 
-      // 유효한 필드만 포함되어야 함
+      // Only valid fields should be included
       expect(result.filter).toEqual([
         { field: 'status', operator: 'eq', value: 'published' },
       ]);
@@ -205,7 +205,7 @@ describe('JsonApiQueryService', () => {
       } as any;
       const result = service.parse(request);
 
-      // 유효한 필드만 포함되어야 함
+      // Only valid fields should be included
       expect(result.sort).toEqual([
         { field: 'title', order: 'asc' },
         { field: 'createdAt', order: 'desc' },
@@ -239,12 +239,12 @@ describe('JsonApiQueryService', () => {
   });
 
   // ========================================
-  // 화이트리스트 테스트
+  // Whitelist Tests
   // ========================================
 
   describe('JsonApiQueryService - Whitelist', () => {
     describe('parseWithWhitelist', () => {
-      it('whitelist 없으면 모든 쿼리 허용', () => {
+      it('should allow all queries when no whitelist is provided', () => {
         const request = {
           query: {
             filter: { status: 'published', secret: 'hidden' },
@@ -256,7 +256,7 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request);
 
-        // 모든 쿼리가 그대로 유지되어야 함
+        // All queries should be preserved as-is
         expect(result.parsed.filter).toHaveLength(2);
         expect(result.parsed.sort).toHaveLength(2);
         expect(result.parsed.include).toHaveLength(3);
@@ -264,7 +264,7 @@ describe('JsonApiQueryService', () => {
         expect(result.errors).toEqual([]);
       });
 
-      it('whitelist가 undefined면 모든 쿼리 허용', () => {
+      it('should allow all queries when whitelist is undefined', () => {
         const request = {
           query: {
             filter: { status: 'published' },
@@ -280,7 +280,7 @@ describe('JsonApiQueryService', () => {
     });
 
     describe('validateFilters', () => {
-      it('허용된 필터만 통과시킨다', () => {
+      it('should only allow permitted filters', () => {
         const request = {
           query: {
             filter: {
@@ -304,7 +304,7 @@ describe('JsonApiQueryService', () => {
         ]);
       });
 
-      it('허용되지 않은 필터를 무시한다 (ignore 모드)', () => {
+      it('should ignore disallowed filters (ignore mode)', () => {
         const request = {
           query: {
             filter: {
@@ -329,7 +329,7 @@ describe('JsonApiQueryService', () => {
         expect(result.errors).toEqual([]);
       });
 
-      it('허용되지 않은 필터에 에러를 발생시킨다 (error 모드)', () => {
+      it('should raise error for disallowed filters (error mode)', () => {
         const request = {
           query: {
             filter: {
@@ -357,7 +357,7 @@ describe('JsonApiQueryService', () => {
         expect(result.warnings).toEqual([]);
       });
 
-      it('중첩 필터를 올바르게 검증한다', () => {
+      it('should correctly validate nested filters', () => {
         const request = {
           query: {
             filter: {
@@ -368,7 +368,7 @@ describe('JsonApiQueryService', () => {
           },
         } as any;
 
-        // 'author' 필드가 허용되면 'author.name', 'author.email' 모두 허용
+        // When 'author' field is allowed, both 'author.name' and 'author.email' are allowed
         const whitelist: QueryWhitelistOptions = {
           allowedFilters: ['author', 'status'],
           onDisallowed: 'error',
@@ -376,8 +376,8 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request, whitelist);
 
-        // author.name, author.email은 허용 (부모 'author'가 허용됨)
-        // comments.author.id는 거부
+        // author.name, author.email are allowed (parent 'author' is allowed)
+        // comments.author.id is rejected
         expect(result.parsed.filter).toHaveLength(2);
         expect(result.parsed.filter.map((f) => f.field)).toEqual([
           'author.name',
@@ -388,7 +388,7 @@ describe('JsonApiQueryService', () => {
         );
       });
 
-      it('빈 배열이면 모든 필터 비활성화', () => {
+      it('should disable all filters when array is empty', () => {
         const request = {
           query: {
             filter: {
@@ -409,7 +409,7 @@ describe('JsonApiQueryService', () => {
         expect(result.errors).toHaveLength(2);
       });
 
-      it('정확히 일치하는 중첩 필터도 허용한다', () => {
+      it('should also allow exact matching nested filters', () => {
         const request = {
           query: {
             filter: {
@@ -430,7 +430,7 @@ describe('JsonApiQueryService', () => {
     });
 
     describe('validateSorts', () => {
-      it('허용된 정렬 필드만 통과시킨다', () => {
+      it('should only allow permitted sort fields', () => {
         const request = {
           query: {
             sort: '-createdAt,title,password',
@@ -450,7 +450,7 @@ describe('JsonApiQueryService', () => {
         ]);
       });
 
-      it('허용되지 않은 정렬을 무시한다 (ignore 모드)', () => {
+      it('should ignore disallowed sorts (ignore mode)', () => {
         const request = {
           query: {
             sort: '-createdAt,secretField',
@@ -471,7 +471,7 @@ describe('JsonApiQueryService', () => {
         expect(result.errors).toEqual([]);
       });
 
-      it('허용되지 않은 정렬에 에러를 발생시킨다 (error 모드)', () => {
+      it('should raise error for disallowed sorts (error mode)', () => {
         const request = {
           query: {
             sort: 'title,-internal',
@@ -491,7 +491,7 @@ describe('JsonApiQueryService', () => {
         );
       });
 
-      it('빈 배열이면 모든 정렬 비활성화', () => {
+      it('should disable all sorts when array is empty', () => {
         const request = {
           query: {
             sort: '-createdAt,title',
@@ -511,7 +511,7 @@ describe('JsonApiQueryService', () => {
     });
 
     describe('validateIncludes', () => {
-      it('허용된 include만 통과시킨다', () => {
+      it('should only allow permitted includes', () => {
         const request = {
           query: {
             include: 'author,comments,tags,secretRelation',
@@ -528,7 +528,7 @@ describe('JsonApiQueryService', () => {
         expect(result.parsed.include).toEqual(['author', 'comments', 'tags']);
       });
 
-      it('최대 깊이를 초과하면 거부한다', () => {
+      it('should reject when max depth is exceeded', () => {
         const request = {
           query: {
             include: 'author,author.profile,author.profile.avatar',
@@ -542,8 +542,8 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request, whitelist);
 
-        // author (깊이 1), author.profile (깊이 2) 허용
-        // author.profile.avatar (깊이 3) 거부
+        // author (depth 1), author.profile (depth 2) allowed
+        // author.profile.avatar (depth 3) rejected
         expect(result.parsed.include).toHaveLength(2);
         expect(result.parsed.include).toEqual(['author', 'author.profile']);
         expect(result.errors).toContain(
@@ -551,7 +551,7 @@ describe('JsonApiQueryService', () => {
         );
       });
 
-      it('부모 허용 시 자식도 허용한다 (author -> author.profile)', () => {
+      it('should allow children when parent is allowed (author -> author.profile)', () => {
         const request = {
           query: {
             include: 'author.profile,author.posts,tags',
@@ -565,13 +565,13 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request, whitelist);
 
-        // 'author'가 허용되면 'author.profile', 'author.posts' 모두 허용
+        // When 'author' is allowed, both 'author.profile' and 'author.posts' are allowed
         expect(result.parsed.include).toHaveLength(3);
         expect(result.warnings).toEqual([]);
         expect(result.errors).toEqual([]);
       });
 
-      it('허용되지 않은 include를 무시한다 (ignore 모드)', () => {
+      it('should ignore disallowed includes (ignore mode)', () => {
         const request = {
           query: {
             include: 'author,secrets',
@@ -589,7 +589,7 @@ describe('JsonApiQueryService', () => {
         expect(result.warnings).toContain("Include 'secrets' is not allowed");
       });
 
-      it('빈 배열이면 모든 include 비활성화', () => {
+      it('should disable all includes when array is empty', () => {
         const request = {
           query: {
             include: 'author,comments',
@@ -607,7 +607,7 @@ describe('JsonApiQueryService', () => {
         expect(result.errors).toHaveLength(2);
       });
 
-      it('깊이와 허용 목록을 동시에 검증한다', () => {
+      it('should validate both depth and allowed list simultaneously', () => {
         const request = {
           query: {
             include: 'author,author.profile.avatar,secrets',
@@ -622,9 +622,9 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request, whitelist);
 
-        // author (깊이 1, 허용) - 통과
-        // author.profile.avatar (깊이 3, 허용목록에는 있지만 깊이 초과) - 깊이 체크가 먼저
-        // secrets (깊이 1, 허용목록에 없음) - 거부
+        // author (depth 1, allowed) - passes
+        // author.profile.avatar (depth 3, in allowed list but exceeds depth) - depth check first
+        // secrets (depth 1, not in allowed list) - rejected
         expect(result.parsed.include).toHaveLength(1);
         expect(result.parsed.include).toEqual(['author']);
         expect(result.errors).toContain(
@@ -635,7 +635,7 @@ describe('JsonApiQueryService', () => {
     });
 
     describe('validateFields', () => {
-      it('타입별 허용 필드만 통과시킨다', () => {
+      it('should only allow permitted fields per type', () => {
         const request = {
           query: {
             fields: {
@@ -665,7 +665,7 @@ describe('JsonApiQueryService', () => {
         );
       });
 
-      it('설정되지 않은 타입은 모든 필드 허용', () => {
+      it('should allow all fields for unconfigured types', () => {
         const request = {
           query: {
             fields: {
@@ -683,13 +683,13 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request, whitelist);
 
-        // articles는 title만 허용
+        // articles allows only title
         expect(result.parsed.fields.articles).toEqual(['title']);
-        // comments는 설정 없으므로 모두 허용
+        // comments has no configuration, so all fields are allowed
         expect(result.parsed.fields.comments).toEqual(['body', 'author']);
       });
 
-      it('허용되지 않은 필드를 무시한다 (ignore 모드)', () => {
+      it('should ignore disallowed fields (ignore mode)', () => {
         const request = {
           query: {
             fields: {
@@ -714,7 +714,7 @@ describe('JsonApiQueryService', () => {
         expect(result.errors).toEqual([]);
       });
 
-      it('빈 배열이면 해당 타입의 모든 필드 비활성화', () => {
+      it('should disable all fields for a type when array is empty', () => {
         const request = {
           query: {
             fields: {
@@ -737,8 +737,8 @@ describe('JsonApiQueryService', () => {
       });
     });
 
-    describe('종합 테스트', () => {
-      it('모든 화이트리스트 옵션을 동시에 적용한다', () => {
+    describe('Integration Tests', () => {
+      it('should apply all whitelist options simultaneously', () => {
         const request = {
           query: {
             filter: {
@@ -766,22 +766,22 @@ describe('JsonApiQueryService', () => {
 
         const result = service.parseWithWhitelist(request, whitelist);
 
-        // 필터: status만 허용
+        // Filter: only status allowed
         expect(result.parsed.filter).toHaveLength(1);
         expect(result.parsed.filter[0].field).toBe('status');
 
-        // 정렬: createdAt만 허용
+        // Sort: only createdAt allowed
         expect(result.parsed.sort).toHaveLength(1);
         expect(result.parsed.sort[0].field).toBe('createdAt');
 
-        // Include: author만 허용
+        // Include: only author allowed
         expect(result.parsed.include).toHaveLength(1);
         expect(result.parsed.include[0]).toBe('author');
 
-        // Fields: title, content만 허용
+        // Fields: only title and content allowed
         expect(result.parsed.fields.articles).toEqual(['title', 'content']);
 
-        // 에러 확인
+        // Verify errors
         expect(result.errors).toContain(
           "Filter field 'password' is not allowed",
         );
@@ -794,7 +794,7 @@ describe('JsonApiQueryService', () => {
         );
       });
 
-      it('onDisallowed 기본값은 ignore', () => {
+      it('should default onDisallowed to ignore', () => {
         const request = {
           query: {
             filter: { status: 'published', password: 'secret' },
@@ -803,7 +803,7 @@ describe('JsonApiQueryService', () => {
 
         const whitelist: QueryWhitelistOptions = {
           allowedFilters: ['status'],
-          // onDisallowed 미지정
+          // onDisallowed not specified
         };
 
         const result = service.parseWithWhitelist(request, whitelist);

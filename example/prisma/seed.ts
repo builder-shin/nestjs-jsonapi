@@ -3,16 +3,16 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  // 기존 데이터 삭제
+  // Delete existing data
   await prisma.comment.deleteMany();
   await prisma.article.deleteMany();
   await prisma.user.deleteMany();
 
-  // 사용자 생성
+  // Create users
   const admin = await prisma.user.create({
     data: {
       email: "admin@example.com",
-      name: "관리자",
+      name: "Admin",
       role: "admin",
     },
   });
@@ -20,7 +20,7 @@ async function main() {
   const user1 = await prisma.user.create({
     data: {
       email: "user1@example.com",
-      name: "홍길동",
+      name: "John Doe",
       role: "user",
     },
   });
@@ -28,17 +28,17 @@ async function main() {
   const user2 = await prisma.user.create({
     data: {
       email: "user2@example.com",
-      name: "김철수",
+      name: "Jane Smith",
       role: "user",
     },
   });
 
-  // 게시글 생성
+  // Create articles
   const article1 = await prisma.article.create({
     data: {
-      title: "NestJS JSON:API 시작하기",
+      title: "Getting Started with NestJS JSON:API",
       content:
-        "이 글에서는 NestJS와 JSON:API 스펙을 사용하여 RESTful API를 구축하는 방법을 알아봅니다.",
+        "In this article, we will learn how to build a RESTful API using NestJS and the JSON:API spec.",
       status: "published",
       publishedAt: new Date(),
       authorId: admin.id,
@@ -47,8 +47,8 @@ async function main() {
 
   const article2 = await prisma.article.create({
     data: {
-      title: "Prisma ORM 활용법",
-      content: "Prisma ORM을 사용하여 데이터베이스를 효율적으로 관리하는 방법을 설명합니다.",
+      title: "How to Use Prisma ORM",
+      content: "This article explains how to efficiently manage databases using Prisma ORM.",
       status: "published",
       publishedAt: new Date(),
       authorId: user1.id,
@@ -57,35 +57,35 @@ async function main() {
 
   const article3 = await prisma.article.create({
     data: {
-      title: "작성 중인 글",
-      content: "이 글은 아직 작성 중입니다.",
+      title: "Work in Progress",
+      content: "This article is still being written.",
       status: "draft",
       authorId: user2.id,
     },
   });
 
-  // 댓글 생성
+  // Create comments
   await prisma.comment.createMany({
     data: [
       {
-        body: "좋은 글 감사합니다!",
+        body: "Thanks for the great article!",
         authorId: user1.id,
         articleId: article1.id,
       },
       {
-        body: "많은 도움이 되었습니다.",
+        body: "This was very helpful.",
         authorId: user2.id,
         articleId: article1.id,
       },
       {
-        body: "Prisma 정말 편리하네요!",
+        body: "Prisma is really convenient!",
         authorId: admin.id,
         articleId: article2.id,
       },
     ],
   });
 
-  console.log("Seed 데이터가 성공적으로 생성되었습니다.");
+  console.log("Seed data created successfully.");
   console.log(`- Users: ${await prisma.user.count()}`);
   console.log(`- Articles: ${await prisma.article.count()}`);
   console.log(`- Comments: ${await prisma.comment.count()}`);

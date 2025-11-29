@@ -1,12 +1,12 @@
 /**
- * JSON:API Content-Type 검증 가드
+ * JSON:API Content-Type Validation Guard
  *
- * JSON:API 1.1 스펙에 따라 요청의 Content-Type 헤더를 검증합니다.
+ * Validates request Content-Type header according to JSON:API 1.1 spec.
  *
  * @packageDocumentation
  * @module guards
  *
- * 의존성: 없음
+ * Dependencies: none
  */
 
 import {
@@ -18,28 +18,28 @@ import {
 import { Request } from 'express';
 
 /**
- * JSON:API 표준 미디어 타입
+ * JSON:API standard media type
  */
 const JSON_API_MEDIA_TYPE = 'application/vnd.api+json';
 
 /**
- * JSON:API Content-Type 검증 가드
+ * JSON:API Content-Type Validation Guard
  *
- * JSON:API 1.1 스펙에 따라:
- * - 요청의 Content-Type이 application/vnd.api+json이어야 함
- * - Content-Type에 허용되지 않는 미디어 타입 파라미터가 포함되면 안됨 (charset 제외)
+ * According to JSON:API 1.1 spec:
+ * - Request Content-Type must be application/vnd.api+json
+ * - Content-Type must not contain disallowed media type parameters (except charset)
  *
  * @example
  * ```typescript
- * // 전역 가드로 등록
+ * // Register as global guard
  * app.useGlobalGuards(new JsonApiContentTypeGuard());
  *
- * // 컨트롤러 레벨에서 사용
+ * // Use at controller level
  * @UseGuards(JsonApiContentTypeGuard)
  * @Controller('articles')
  * export class ArticleController {}
  *
- * // 특정 엔드포인트에서만 사용
+ * // Use only on specific endpoint
  * @UseGuards(JsonApiContentTypeGuard)
  * @Post()
  * create(@Body() data: CreateArticleDto) {}
@@ -48,21 +48,21 @@ const JSON_API_MEDIA_TYPE = 'application/vnd.api+json';
 @Injectable()
 export class JsonApiContentTypeGuard implements CanActivate {
   /**
-   * 가드 실행
+   * Execute guard
    *
-   * @param context 실행 컨텍스트
-   * @returns true if Content-Type이 유효한 경우
-   * @throws UnsupportedMediaTypeException - Content-Type이 유효하지 않은 경우
+   * @param context Execution context
+   * @returns true if Content-Type is valid
+   * @throws UnsupportedMediaTypeException - if Content-Type is invalid
    */
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
     const method = request.method.toUpperCase();
 
-    // body가 없는 HTTP 메서드는 Content-Type 검증 스킵
-    // - GET: 리소스 조회 (body 없음)
-    // - HEAD: GET과 동일하나 body 없이 헤더만 반환
-    // - DELETE: 리소스 삭제 (일반적으로 body 없음)
-    // - OPTIONS: CORS preflight 등 (body 없음)
+    // Skip Content-Type validation for HTTP methods without body
+    // - GET: Resource retrieval (no body)
+    // - HEAD: Same as GET but returns headers only without body
+    // - DELETE: Resource deletion (typically no body)
+    // - OPTIONS: CORS preflight, etc. (no body)
     const methodsWithoutBody = ['GET', 'HEAD', 'DELETE', 'OPTIONS'];
     if (methodsWithoutBody.includes(method)) {
       return true;
@@ -70,16 +70,16 @@ export class JsonApiContentTypeGuard implements CanActivate {
 
     const contentType = request.headers['content-type'];
 
-    // Content-Type 헤더가 없는 경우
+    // No Content-Type header
     if (!contentType) {
-      // body가 있는 경우에만 에러
+      // Error only if body exists
       if (request.body && Object.keys(request.body).length > 0) {
         throw new UnsupportedMediaTypeException({
           errors: [
             {
               status: '415',
               title: 'Unsupported Media Type',
-              detail: `Content-Type 헤더가 필요합니다. '${JSON_API_MEDIA_TYPE}'을 사용하세요.`,
+              detail: `Content-Type header is required. Use '${JSON_API_MEDIA_TYPE}'.`,
             },
           ],
         });
@@ -87,7 +87,7 @@ export class JsonApiContentTypeGuard implements CanActivate {
       return true;
     }
 
-    // Content-Type 파싱 및 검증
+    // Parse and validate Content-Type
     const isValid = this.validateContentType(contentType);
 
     if (!isValid) {
@@ -96,7 +96,7 @@ export class JsonApiContentTypeGuard implements CanActivate {
           {
             status: '415',
             title: 'Unsupported Media Type',
-            detail: `Content-Type은 '${JSON_API_MEDIA_TYPE}'이어야 합니다. 받은 값: '${contentType}'`,
+            detail: `Content-Type must be '${JSON_API_MEDIA_TYPE}'. Received: '${contentType}'`,
           },
         ],
       });
@@ -106,34 +106,34 @@ export class JsonApiContentTypeGuard implements CanActivate {
   }
 
   /**
-   * Content-Type 헤더 검증
+   * Validate Content-Type header
    *
-   * - application/vnd.api+json이어야 함
-   * - 허용되지 않는 미디어 타입 파라미터가 없어야 함
+   * - Must be application/vnd.api+json
+   * - Must not have disallowed media type parameters
    *
-   * @param contentType Content-Type 헤더 값
-   * @returns 유효 여부
+   * @param contentType Content-Type header value
+   * @returns Validity status
    */
   private validateContentType(contentType: string): boolean {
-    // 미디어 타입과 파라미터 분리
+    // Separate media type and parameters
     const [mediaType, ...params] = contentType.split(';').map((s) => s.trim());
 
-    // 기본 미디어 타입 확인
+    // Check base media type
     if (mediaType.toLowerCase() !== JSON_API_MEDIA_TYPE) {
       return false;
     }
 
-    // 허용된 파라미터: charset만 허용
+    // Allowed parameters: only charset
     for (const param of params) {
       const [key] = param.split('=').map((s) => s.trim().toLowerCase());
 
-      // charset은 허용
+      // charset is allowed
       if (key === 'charset') {
         continue;
       }
 
-      // 그 외 파라미터는 JSON:API 스펙에서 허용되지 않음
-      // 예: application/vnd.api+json; profile=... 는 거부
+      // Other parameters are not allowed by JSON:API spec
+      // e.g., application/vnd.api+json; profile=... is rejected
       return false;
     }
 

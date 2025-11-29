@@ -1,5 +1,5 @@
 import { JsonApiSerializer, Attribute, Relationship } from '../../../src';
-// 순환 참조 방지: type-only import 사용
+// Use type-only import to prevent circular reference
 import type { AuthorSerializer } from './author.serializer';
 import type { CommentSerializer } from './comment.serializer';
 
@@ -21,8 +21,8 @@ export class ArticleSerializer {
   updatedAt!: Date;
 
   /**
-   * 순환 참조 관계: ArticleSerializer ↔ AuthorSerializer
-   * 팩토리 함수 () => AuthorSerializer로 지연 평가하여 순환 참조 해결
+   * Circular reference relationship: ArticleSerializer ↔ AuthorSerializer
+   * Resolves circular reference by using factory function () => AuthorSerializer for lazy evaluation
    */
   @Relationship(() => require('./author.serializer').AuthorSerializer, {
     type: 'hasOne',

@@ -1,18 +1,18 @@
 /**
- * 쿼리 파라미터 유효성 검증 예외
+ * Query Parameter Validation Exception
  *
  * @packageDocumentation
  * @module exceptions
  *
- * 의존성: @nestjs/common
+ * Dependencies: @nestjs/common
  */
 
 import { BadRequestException } from '@nestjs/common';
 
 /**
- * 쿼리 유효성 검증 에러 인터페이스
+ * Query Validation Error Interface
  *
- * JSON:API 스펙을 준수하는 에러 형식을 정의합니다.
+ * Defines error format compliant with JSON:API spec.
  *
  * @example
  * ```typescript
@@ -26,35 +26,35 @@ import { BadRequestException } from '@nestjs/common';
  * ```
  */
 export interface QueryValidationError {
-  /** HTTP 상태 코드 (문자열) */
+  /** HTTP status code (as string) */
   status: string;
-  /** 애플리케이션 특정 에러 코드 */
+  /** Application-specific error code */
   code: string;
-  /** 에러 제목 (간략한 설명) */
+  /** Error title (brief description) */
   title: string;
-  /** 에러 상세 설명 */
+  /** Error detail description */
   detail: string;
-  /** 에러 소스 정보 (선택) */
+  /** Error source information (optional) */
   source?: {
-    /** 문제가 된 쿼리 파라미터 */
+    /** Query parameter that caused the error */
     parameter: string;
   };
 }
 
 /**
- * 쿼리 파라미터 유효성 검증 예외
+ * Query Parameter Validation Exception
  *
- * 화이트리스트에 없는 쿼리 파라미터 사용 시 발생하는 예외입니다.
- * JSON:API 형식의 에러 응답을 반환합니다.
+ * Exception thrown when using query parameters not in the whitelist.
+ * Returns JSON:API formatted error response.
  *
  * @example
  * ```typescript
- * // 단일 에러
+ * // Single error
  * throw new JsonApiQueryException([
  *   JsonApiQueryException.disallowedFilter('password'),
  * ]);
  *
- * // 복수 에러
+ * // Multiple errors
  * throw new JsonApiQueryException([
  *   JsonApiQueryException.disallowedFilter('password'),
  *   JsonApiQueryException.disallowedSort('secret'),
@@ -63,7 +63,7 @@ export interface QueryValidationError {
  */
 export class JsonApiQueryException extends BadRequestException {
   /**
-   * @param errors 쿼리 유효성 검증 에러 배열
+   * @param errors Query validation error array
    */
   constructor(errors: QueryValidationError[]) {
     super({
@@ -72,10 +72,10 @@ export class JsonApiQueryException extends BadRequestException {
   }
 
   /**
-   * 허용되지 않은 필터 필드 에러 생성
+   * Create disallowed filter field error
    *
-   * @param field 허용되지 않은 필터 필드명
-   * @returns QueryValidationError 객체
+   * @param field Disallowed filter field name
+   * @returns QueryValidationError object
    *
    * @example
    * ```typescript
@@ -100,10 +100,10 @@ export class JsonApiQueryException extends BadRequestException {
   }
 
   /**
-   * 허용되지 않은 정렬 필드 에러 생성
+   * Create disallowed sort field error
    *
-   * @param field 허용되지 않은 정렬 필드명
-   * @returns QueryValidationError 객체
+   * @param field Disallowed sort field name
+   * @returns QueryValidationError object
    *
    * @example
    * ```typescript
@@ -128,10 +128,10 @@ export class JsonApiQueryException extends BadRequestException {
   }
 
   /**
-   * 허용되지 않은 include 관계 에러 생성
+   * Create disallowed include relation error
    *
-   * @param relation 허용되지 않은 관계명
-   * @returns QueryValidationError 객체
+   * @param relation Disallowed relation name
+   * @returns QueryValidationError object
    *
    * @example
    * ```typescript
@@ -156,11 +156,11 @@ export class JsonApiQueryException extends BadRequestException {
   }
 
   /**
-   * include 최대 깊이 초과 에러 생성
+   * Create include maximum depth exceeded error
    *
-   * @param relation 깊이를 초과한 관계 경로
-   * @param maxDepth 허용된 최대 깊이
-   * @returns QueryValidationError 객체
+   * @param relation Relation path that exceeded depth
+   * @param maxDepth Allowed maximum depth
+   * @returns QueryValidationError object
    *
    * @example
    * ```typescript
@@ -188,11 +188,11 @@ export class JsonApiQueryException extends BadRequestException {
   }
 
   /**
-   * 허용되지 않은 sparse fieldset 필드 에러 생성
+   * Create disallowed sparse fieldset field error
    *
-   * @param field 허용되지 않은 필드명
-   * @param type 리소스 타입
-   * @returns QueryValidationError 객체
+   * @param field Disallowed field name
+   * @param type Resource type
+   * @returns QueryValidationError object
    *
    * @example
    * ```typescript

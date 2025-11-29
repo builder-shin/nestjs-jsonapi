@@ -1,12 +1,12 @@
 /**
- * JSON:API 응답 인터셉터
+ * JSON:API Response Interceptor
  *
- * Content-Type 헤더 설정 및 응답 형식 처리
+ * Content-Type header setting and response format handling
  *
  * @packageDocumentation
  * @module interceptors
  *
- * 의존성: 없음
+ * Dependencies: none
  */
 
 import {
@@ -20,23 +20,23 @@ import { map } from 'rxjs/operators';
 import { Response } from 'express';
 
 /**
- * JSON:API 표준 미디어 타입
+ * JSON:API standard media type
  */
 const JSON_API_CONTENT_TYPE = 'application/vnd.api+json';
 
 /**
- * JSON:API 응답 인터셉터
+ * JSON:API Response Interceptor
  *
- * 모든 응답에 대해:
- * 1. Content-Type 헤더를 application/vnd.api+json으로 설정
- * 2. 204 No Content 응답의 경우 body를 제거
+ * For all responses:
+ * 1. Sets Content-Type header to application/vnd.api+json
+ * 2. Removes body for 204 No Content responses
  *
  * @example
  * ```typescript
- * // 전역 인터셉터로 등록
+ * // Register as global interceptor
  * app.useGlobalInterceptors(new JsonApiResponseInterceptor());
  *
- * // 컨트롤러 레벨에서 사용
+ * // Use at controller level
  * @UseInterceptors(JsonApiResponseInterceptor)
  * @Controller('articles')
  * export class ArticleController {}
@@ -45,21 +45,21 @@ const JSON_API_CONTENT_TYPE = 'application/vnd.api+json';
 @Injectable()
 export class JsonApiResponseInterceptor implements NestInterceptor {
   /**
-   * 인터셉터 실행
+   * Execute interceptor
    *
-   * @param context 실행 컨텍스트
-   * @param next 핸들러 체인
-   * @returns 처리된 응답
+   * @param context Execution context
+   * @param next Handler chain
+   * @returns Processed response
    */
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const response = context.switchToHttp().getResponse<Response>();
 
     return next.handle().pipe(
       map((data) => {
-        // JSON:API Content-Type 헤더 설정
+        // Set JSON:API Content-Type header
         response.setHeader('Content-Type', JSON_API_CONTENT_TYPE);
 
-        // 204 No Content인 경우 body 없이 반환
+        // Return without body for 204 No Content
         if (response.statusCode === 204) {
           return;
         }

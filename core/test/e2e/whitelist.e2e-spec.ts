@@ -1,12 +1,12 @@
 /**
- * Query Whitelist E2E 테스트
+ * Query Whitelist E2E Tests
  *
- * 쿼리 파라미터 화이트리스트 기능의 통합 테스트입니다.
+ * Integration tests for query parameter whitelist functionality.
  * - Filter whitelist
  * - Sort whitelist
- * - Include whitelist (깊이 제한 포함)
+ * - Include whitelist (with depth limit)
  * - Sparse fieldsets whitelist
- * - onDisallowed 모드 ('ignore' vs 'error')
+ * - onDisallowed modes ('ignore' vs 'error')
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -23,7 +23,7 @@ describe('Query Whitelist E2E', () => {
 
     app = moduleFixture.createNestApplication();
 
-    // JSON:API 쿼리 파라미터 파싱을 위한 extended query parser 설정
+    // Extended query parser configuration for JSON:API query parameter parsing
     // filter[status]=published → { filter: { status: 'published' } }
     const expressApp = app.getHttpAdapter().getInstance();
     expressApp.set('query parser', 'extended');
@@ -42,11 +42,11 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // 하위 호환성 테스트 (whitelist 설정 없음)
+  // Backward Compatibility Tests (no whitelist configuration)
   // ============================================
 
-  describe('설정 없음: 모든 쿼리 허용 (하위 호환)', () => {
-    it('query 옵션 없이 모든 필터 허용', async () => {
+  describe('No Configuration: Allow All Queries (Backward Compatible)', () => {
+    it('should allow all filters without query options', async () => {
       const response = await request(app.getHttpServer())
         .get('/articles?filter[status]=published&filter[anyField]=value')
         .expect(200);
@@ -57,7 +57,7 @@ describe('Query Whitelist E2E', () => {
       );
     });
 
-    it('query 옵션 없이 모든 정렬 허용', async () => {
+    it('should allow all sorts without query options', async () => {
       const response = await request(app.getHttpServer())
         .get('/articles?sort=-createdAt,anyField')
         .expect(200);
@@ -65,7 +65,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body).toHaveProperty('data');
     });
 
-    it('query 옵션 없이 모든 include 허용', async () => {
+    it('should allow all includes without query options', async () => {
       const response = await request(app.getHttpServer())
         .get('/articles?include=author,comments')
         .expect(200);
@@ -75,24 +75,24 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // Filter Whitelist 테스트 (ignore 모드)
+  // Filter Whitelist Tests (ignore mode)
   // ============================================
 
-  describe('Filter Whitelist (ignore 모드)', () => {
-    it('허용된 필터 적용', async () => {
+  describe('Filter Whitelist (ignore mode)', () => {
+    it('should apply allowed filters', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?filter[status]=published')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 모든 반환된 아티클은 status가 published여야 함
+      // All returned articles should have status: published
       for (const article of response.body.data) {
         expect(article.attributes.status).toBe('published');
       }
     });
 
-    it('허용되지 않은 필터 무시', async () => {
-      // password 필터는 허용 목록에 없으므로 무시됨
+    it('should ignore disallowed filters', async () => {
+      // password filter is not in allowed list, so it's ignored
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-ignore-articles?filter[status]=published&filter[password]=secret',
@@ -100,12 +100,12 @@ describe('Query Whitelist E2E', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 에러 없이 요청 성공 (password 필터는 무시됨)
+      // Request succeeds without error (password filter is ignored)
       expect(response.body.errors).toBeUndefined();
     });
 
-    it('허용되지 않은 필터만 사용 시 빈 필터로 처리', async () => {
-      // password와 secret 둘 다 허용 목록에 없음
+    it('should treat as empty filter when only disallowed filters are used', async () => {
+      // Both password and secret are not in allowed list
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-ignore-articles?filter[password]=secret&filter[internalId]=123',
@@ -113,26 +113,26 @@ describe('Query Whitelist E2E', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 필터가 무시되어 모든 데이터 반환
+      // Filters are ignored, returning all data
     });
 
-    it('중첩 필터 - 부모가 허용되면 자식도 허용', async () => {
-      // 'author' 관련 필터는 허용되지 않음 (allowedFilters에 없음)
+    it('should allow children when parent is allowed for nested filters', async () => {
+      // 'author' related filters are not allowed (not in allowedFilters)
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?filter[author.name]=John')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // author.name은 무시됨 (allowedFilters에 author가 없음)
+      // author.name is ignored (author is not in allowedFilters)
     });
   });
 
   // ============================================
-  // Filter Whitelist 테스트 (error 모드)
+  // Filter Whitelist Tests (error mode)
   // ============================================
 
-  describe('Filter Whitelist (error 모드)', () => {
-    it('허용된 필터 적용', async () => {
+  describe('Filter Whitelist (error mode)', () => {
+    it('should apply allowed filters', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?filter[status]=published')
         .expect(200);
@@ -143,7 +143,7 @@ describe('Query Whitelist E2E', () => {
       }
     });
 
-    it('허용되지 않은 필터 사용 시 400 에러', async () => {
+    it('should return 400 error when using disallowed filters', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?filter[password]=secret')
         .expect(400);
@@ -159,7 +159,7 @@ describe('Query Whitelist E2E', () => {
       expect(error.source.parameter).toBe('filter[password]');
     });
 
-    it('복수의 허용되지 않은 필터 사용 시 모든 에러 반환', async () => {
+    it('should return all errors when using multiple disallowed filters', async () => {
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-error-articles?filter[password]=secret&filter[internalId]=123',
@@ -175,7 +175,7 @@ describe('Query Whitelist E2E', () => {
       expect(errorFields).toContain('filter[internalId]');
     });
 
-    it('허용된 필터와 허용되지 않은 필터 혼합 시 에러', async () => {
+    it('should return error when mixing allowed and disallowed filters', async () => {
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-error-articles?filter[status]=published&filter[password]=secret',
@@ -188,50 +188,50 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // Sort Whitelist 테스트 (ignore 모드)
+  // Sort Whitelist Tests (ignore mode)
   // ============================================
 
-  describe('Sort Whitelist (ignore 모드)', () => {
-    it('허용된 정렬 적용', async () => {
+  describe('Sort Whitelist (ignore mode)', () => {
+    it('should apply allowed sorts', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?sort=-createdAt')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 정렬이 적용되었는지 확인
+      // Verify sorting is applied
       const dates = response.body.data.map((a: any) =>
         new Date(a.attributes['created-at']).getTime(),
       );
-      // 내림차순 정렬 확인
+      // Verify descending order
       expect(dates).toEqual([...dates].sort((a, b) => b - a));
     });
 
-    it('허용되지 않은 정렬 무시', async () => {
-      // secretField는 허용 목록에 없음
+    it('should ignore disallowed sorts', async () => {
+      // secretField is not in allowed list
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?sort=secretField')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 정렬이 무시되어 기본 순서로 반환
+      // Sort is ignored, returning in default order
     });
 
-    it('혼합 정렬 - 허용된 것만 적용', async () => {
+    it('should apply only allowed sorts in mixed sorts', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?sort=-createdAt,secretField,title')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // secretField는 무시되고 createdAt, title만 적용됨
+      // secretField is ignored, only createdAt and title are applied
     });
   });
 
   // ============================================
-  // Sort Whitelist 테스트 (error 모드)
+  // Sort Whitelist Tests (error mode)
   // ============================================
 
-  describe('Sort Whitelist (error 모드)', () => {
-    it('허용된 정렬 적용', async () => {
+  describe('Sort Whitelist (error mode)', () => {
+    it('should apply allowed sorts', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?sort=title,-updatedAt')
         .expect(200);
@@ -239,7 +239,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body).toHaveProperty('data');
     });
 
-    it('허용되지 않은 정렬 사용 시 400 에러', async () => {
+    it('should return 400 error when using disallowed sorts', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?sort=secretField')
         .expect(400);
@@ -253,7 +253,7 @@ describe('Query Whitelist E2E', () => {
       expect(error.source.parameter).toBe('sort');
     });
 
-    it('혼합 정렬 시 허용되지 않은 필드에 대해 에러', async () => {
+    it('should return error for disallowed fields in mixed sorts', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?sort=title,-secretField')
         .expect(400);
@@ -264,54 +264,54 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // Include Whitelist 테스트 (ignore 모드)
+  // Include Whitelist Tests (ignore mode)
   // ============================================
 
-  describe('Include Whitelist (ignore 모드)', () => {
-    it('허용된 include 적용', async () => {
+  describe('Include Whitelist (ignore mode)', () => {
+    it('should apply allowed includes', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?include=author')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // include가 적용되면 included 배열이 포함될 수 있음
+      // When include is applied, included array may be present
     });
 
-    it('허용되지 않은 include 무시', async () => {
-      // secrets는 허용 목록에 없음
+    it('should ignore disallowed includes', async () => {
+      // secrets is not in allowed list
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?include=secrets')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // secrets는 무시되어 included에 포함되지 않음
+      // secrets is ignored and not included in included array
       if (response.body.included) {
         const types = response.body.included.map((r: any) => r.type);
         expect(types).not.toContain('secrets');
       }
     });
 
-    it('혼합 include - 허용된 것만 적용', async () => {
+    it('should apply only allowed includes in mixed includes', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?include=author,secrets,comments')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // author와 comments만 적용됨
+      // Only author and comments are applied
     });
 
-    it('최대 깊이 초과 시 무시', async () => {
-      // maxIncludeDepth: 2이므로 깊이 3은 무시됨
+    it('should ignore when max depth is exceeded', async () => {
+      // maxIncludeDepth: 2, so depth 3 is ignored
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?include=author.profile.avatar')
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 깊이 초과로 무시됨
+      // Ignored due to depth exceeded
     });
 
-    it('깊이 2까지 허용', async () => {
-      // maxIncludeDepth: 2이므로 깊이 2까지는 허용
+    it('should allow up to depth 2', async () => {
+      // maxIncludeDepth: 2, so depth 2 is allowed
       const response = await request(app.getHttpServer())
         .get('/whitelist-ignore-articles?include=author.profile')
         .expect(200);
@@ -321,11 +321,11 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // Include Whitelist 테스트 (error 모드)
+  // Include Whitelist Tests (error mode)
   // ============================================
 
-  describe('Include Whitelist (error 모드)', () => {
-    it('허용된 include 적용', async () => {
+  describe('Include Whitelist (error mode)', () => {
+    it('should apply allowed includes', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?include=author,comments')
         .expect(200);
@@ -333,7 +333,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body).toHaveProperty('data');
     });
 
-    it('허용되지 않은 include 사용 시 400 에러', async () => {
+    it('should return 400 error when using disallowed includes', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?include=secrets')
         .expect(400);
@@ -347,8 +347,8 @@ describe('Query Whitelist E2E', () => {
       expect(error.source.parameter).toBe('include');
     });
 
-    it('최대 깊이 초과 시 400 에러', async () => {
-      // maxIncludeDepth: 2이므로 깊이 3은 에러
+    it('should return 400 error when max depth is exceeded', async () => {
+      // maxIncludeDepth: 2, so depth 3 is an error
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?include=author.profile.avatar')
         .expect(400);
@@ -359,10 +359,10 @@ describe('Query Whitelist E2E', () => {
       expect(error.code).toBe('INCLUDE_DEPTH_EXCEEDED');
       expect(error.title).toBe('Include Depth Exceeded');
       expect(error.detail).toContain('author.profile.avatar');
-      expect(error.detail).toContain('2'); // 최대 깊이
+      expect(error.detail).toContain('2'); // max depth
     });
 
-    it('복합 에러 - 깊이 초과 + 허용되지 않은 include', async () => {
+    it('should return compound errors - depth exceeded + disallowed include', async () => {
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-error-articles?include=author.profile.avatar,secrets',
@@ -376,8 +376,8 @@ describe('Query Whitelist E2E', () => {
       expect(codes).toContain('DISALLOWED_INCLUDE');
     });
 
-    it('부모 허용 시 자식 허용 (깊이 내)', async () => {
-      // author가 허용되고 깊이 2 이내이면 author.profile도 허용
+    it('should allow children when parent is allowed (within depth)', async () => {
+      // When author is allowed and within depth 2, author.profile is also allowed
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?include=author.posts')
         .expect(200);
@@ -387,11 +387,11 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // 모든 쿼리 비활성화 테스트
+  // All Queries Disabled Tests
   // ============================================
 
-  describe('모든 쿼리 비활성화', () => {
-    it('모든 필터 비활성화 시 어떤 필터도 사용 불가', async () => {
+  describe('All Queries Disabled', () => {
+    it('should not allow any filters when all filters are disabled', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-disabled-articles?filter[status]=published')
         .expect(400);
@@ -400,7 +400,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body.errors[0].code).toBe('DISALLOWED_FILTER');
     });
 
-    it('모든 정렬 비활성화 시 어떤 정렬도 사용 불가', async () => {
+    it('should not allow any sorts when all sorts are disabled', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-disabled-articles?sort=createdAt')
         .expect(400);
@@ -409,7 +409,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body.errors[0].code).toBe('DISALLOWED_SORT');
     });
 
-    it('모든 include 비활성화 시 어떤 include도 사용 불가', async () => {
+    it('should not allow any includes when all includes are disabled', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-disabled-articles?include=author')
         .expect(400);
@@ -418,7 +418,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body.errors[0].code).toBe('DISALLOWED_INCLUDE');
     });
 
-    it('쿼리 없이 기본 목록 조회는 허용', async () => {
+    it('should allow basic list query without any query parameters', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-disabled-articles')
         .expect(200);
@@ -428,11 +428,11 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // Combined 테스트 (여러 화이트리스트 동시 적용)
+  // Combined Tests (multiple whitelists applied simultaneously)
   // ============================================
 
-  describe('Combined (여러 화이트리스트 동시 적용)', () => {
-    it('모든 허용된 쿼리 동시 사용', async () => {
+  describe('Combined (multiple whitelists applied simultaneously)', () => {
+    it('should use all allowed queries simultaneously', async () => {
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-error-articles?filter[status]=published&sort=-createdAt&include=author',
@@ -440,13 +440,13 @@ describe('Query Whitelist E2E', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // 모든 조건이 적용됨
+      // All conditions are applied
       for (const article of response.body.data) {
         expect(article.attributes.status).toBe('published');
       }
     });
 
-    it('하나라도 허용되지 않으면 에러 (error 모드)', async () => {
+    it('should return error if any query is disallowed (error mode)', async () => {
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-error-articles?filter[status]=published&sort=secretField&include=author',
@@ -457,7 +457,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body.errors[0].code).toBe('DISALLOWED_SORT');
     });
 
-    it('복수 에러 동시 발생', async () => {
+    it('should return multiple errors simultaneously', async () => {
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-error-articles?filter[password]=x&sort=secret&include=hidden',
@@ -472,9 +472,9 @@ describe('Query Whitelist E2E', () => {
       expect(codes).toContain('DISALLOWED_INCLUDE');
     });
 
-    it('ignore 모드에서 혼합 쿼리 처리', async () => {
-      // 허용된 것만 적용, 나머지는 무시
-      // JSON:API 규격에 따라 sort와 include는 쉼표로 구분
+    it('should handle mixed queries in ignore mode', async () => {
+      // Only allowed queries are applied, the rest are ignored
+      // According to JSON:API spec, sort and include are comma-separated
       const response = await request(app.getHttpServer())
         .get(
           '/whitelist-ignore-articles?filter[status]=published&filter[password]=x&sort=-createdAt,secret&include=author,hidden',
@@ -482,7 +482,7 @@ describe('Query Whitelist E2E', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('data');
-      // status 필터와 createdAt 정렬, author include만 적용됨
+      // Only status filter, createdAt sort, and author include are applied
       for (const article of response.body.data) {
         expect(article.attributes.status).toBe('published');
       }
@@ -490,14 +490,14 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // 단일 리소스 조회 (show) 화이트리스트 테스트
+  // Single Resource (show) Whitelist Tests
   // ============================================
 
-  describe('단일 리소스 조회 (show) 화이트리스트', () => {
+  describe('Single Resource (show) Whitelist', () => {
     let articleId: string;
 
     beforeAll(async () => {
-      // 테스트용 아티클 생성
+      // Create test article
       const createResponse = await request(app.getHttpServer())
         .post('/whitelist-error-articles')
         .set('Content-Type', 'application/vnd.api+json')
@@ -515,9 +515,9 @@ describe('Query Whitelist E2E', () => {
       articleId = createResponse.body.data?.id;
     });
 
-    it('show 액션에서 허용된 include 적용', async () => {
+    it('should apply allowed includes in show action', async () => {
       if (!articleId) {
-        return; // 아티클 생성 실패 시 스킵
+        return; // Skip if article creation failed
       }
 
       const response = await request(app.getHttpServer())
@@ -527,7 +527,7 @@ describe('Query Whitelist E2E', () => {
       expect(response.body.data.id).toBe(articleId);
     });
 
-    it('show 액션에서 허용되지 않은 include 사용 시 에러', async () => {
+    it('should return error when using disallowed includes in show action', async () => {
       if (!articleId) {
         return;
       }
@@ -542,16 +542,16 @@ describe('Query Whitelist E2E', () => {
   });
 
   // ============================================
-  // JSON:API 에러 응답 형식 검증
+  // JSON:API Error Response Format Validation
   // ============================================
 
-  describe('JSON:API 에러 응답 형식 검증', () => {
-    it('에러 응답이 JSON:API 스펙을 준수', async () => {
+  describe('JSON:API Error Response Format Validation', () => {
+    it('should comply with JSON:API error response spec', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?filter[password]=x')
         .expect(400);
 
-      // JSON:API 에러 형식 검증
+      // Validate JSON:API error format
       expect(response.body).toHaveProperty('errors');
       expect(Array.isArray(response.body.errors)).toBe(true);
 
@@ -563,7 +563,7 @@ describe('Query Whitelist E2E', () => {
       expect(error).toHaveProperty('source');
       expect(error.source).toHaveProperty('parameter');
 
-      // 타입 검증
+      // Type validation
       expect(typeof error.status).toBe('string');
       expect(typeof error.code).toBe('string');
       expect(typeof error.title).toBe('string');
@@ -571,7 +571,7 @@ describe('Query Whitelist E2E', () => {
       expect(typeof error.source.parameter).toBe('string');
     });
 
-    it('Content-Type이 application/vnd.api+json', async () => {
+    it('should have Content-Type application/vnd.api+json', async () => {
       const response = await request(app.getHttpServer())
         .get('/whitelist-error-articles?filter[password]=x')
         .expect(400);

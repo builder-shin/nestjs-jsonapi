@@ -29,7 +29,7 @@ export class ArticleController extends JsonApiCrudController {
     super();
   }
 
-  // abstract getter 구현
+  // abstract getter implementation
   protected get prismaAdapter() {
     return this._prismaAdapter;
   }
@@ -41,9 +41,9 @@ export class ArticleController extends JsonApiCrudController {
   }
 
   /**
-   * 인증 훅 - 실제 구현에서는 JWT 또는 세션 검증
+   * Authentication hook - validates JWT or session in actual implementation
    */
   protected async authenticate(): Promise<void> {
-    // 테스트에서는 항상 통과
+    // Always passes in test environment
   }
 }

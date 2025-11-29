@@ -1,10 +1,10 @@
 /**
- * JSON:API 검증 예외 및 Prisma 에러 처리
+ * JSON:API Validation Exception and Prisma Error Handling
  *
  * @packageDocumentation
  * @module exceptions
  *
- * 의존성: utils/error.util.ts, interfaces/json-api.interface.ts
+ * Dependencies: utils/error.util.ts, interfaces/json-api.interface.ts
  */
 
 import {
@@ -18,32 +18,32 @@ import { JsonApiError } from '../interfaces';
 import { generateErrorId } from '../utils';
 
 /**
- * Prisma 에러 코드 상수
+ * Prisma Error Code Constants
  *
- * Prisma에서 발생하는 주요 에러 코드를 정의합니다.
+ * Defines major error codes from Prisma.
  * @see https://www.prisma.io/docs/reference/api-reference/error-reference
  */
 export const PRISMA_ERROR_CODES = {
-  /** 값이 너무 긴 경우 */
+  /** Value too long */
   P2000: 'P2000',
-  /** 레코드가 존재하지 않음 */
+  /** Record does not exist */
   P2001: 'P2001',
-  /** Unique constraint 위반 */
+  /** Unique constraint violation */
   P2002: 'P2002',
-  /** Foreign key constraint 위반 */
+  /** Foreign key constraint violation */
   P2003: 'P2003',
-  /** 레코드를 찾을 수 없음 */
+  /** Record not found */
   P2025: 'P2025',
 } as const;
 
 /**
- * Prisma 에러 처리
+ * Handle Prisma Errors
  *
- * Prisma 에러 코드에 따라 적절한 HTTP 예외로 변환합니다.
- * 모든 예외는 JSON:API 형식의 에러 응답을 포함합니다.
+ * Converts Prisma error codes to appropriate HTTP exceptions.
+ * All exceptions include JSON:API formatted error responses.
  *
- * @param error Prisma 에러 객체
- * @throws 적절한 HTTP 예외 (ConflictException, BadRequestException, NotFoundException, InternalServerErrorException)
+ * @param error Prisma error object
+ * @throws Appropriate HTTP exception (ConflictException, BadRequestException, NotFoundException, InternalServerErrorException)
  *
  * @example
  * ```typescript
@@ -63,7 +63,7 @@ export function handlePrismaError(error: any): never {
 
   switch (code) {
     case PRISMA_ERROR_CODES.P2002: {
-      // Unique constraint 위반
+      // Unique constraint violation
       const target = meta?.target as string[] | undefined;
       const fields = target?.join(', ') || 'unknown field';
       throw new ConflictException({
@@ -83,7 +83,7 @@ export function handlePrismaError(error: any): never {
     }
 
     case PRISMA_ERROR_CODES.P2003: {
-      // Foreign key constraint 위반
+      // Foreign key constraint violation
       const fieldName = meta?.field_name || 'unknown field';
       throw new BadRequestException({
         errors: [
@@ -101,7 +101,7 @@ export function handlePrismaError(error: any): never {
 
     case PRISMA_ERROR_CODES.P2025:
     case PRISMA_ERROR_CODES.P2001: {
-      // 레코드를 찾을 수 없음
+      // Record not found
       const cause = meta?.cause || 'Record not found';
       throw new NotFoundException({
         errors: [
@@ -117,7 +117,7 @@ export function handlePrismaError(error: any): never {
     }
 
     case PRISMA_ERROR_CODES.P2000: {
-      // 값이 너무 긺
+      // Value too long
       const columnName = meta?.column_name || 'unknown column';
       throw new BadRequestException({
         errors: [
@@ -134,7 +134,7 @@ export function handlePrismaError(error: any): never {
     }
 
     default: {
-      // 알 수 없는 Prisma 에러
+      // Unknown Prisma error
       throw new InternalServerErrorException({
         errors: [
           {
@@ -151,13 +151,13 @@ export function handlePrismaError(error: any): never {
 }
 
 /**
- * Prisma 에러 여부 확인
+ * Check if Error is a Prisma Error
  *
- * 에러 객체가 Prisma에서 발생한 에러인지 확인합니다.
- * Prisma 에러는 'P'로 시작하는 코드를 가집니다.
+ * Checks if the error object originates from Prisma.
+ * Prisma errors have codes starting with 'P'.
  *
- * @param error 확인할 에러 객체
- * @returns Prisma 에러 여부
+ * @param error Error object to check
+ * @returns Whether it's a Prisma error
  *
  * @example
  * ```typescript
@@ -173,14 +173,14 @@ export function isPrismaError(error: any): boolean {
 }
 
 /**
- * JSON:API 검증 예외
+ * JSON:API Validation Exception
  *
- * class-validator 에러를 JSON:API 형식으로 변환하는 예외 클래스입니다.
- * ValidationPipe에서 발생한 검증 에러를 처리할 때 사용합니다.
+ * Exception class that converts class-validator errors to JSON:API format.
+ * Used to handle validation errors from ValidationPipe.
  *
  * @example
  * ```typescript
- * // ValidationPipe 설정
+ * // ValidationPipe configuration
  * app.useGlobalPipes(new ValidationPipe({
  *   exceptionFactory: (errors) => new JsonApiValidationException(errors),
  * }));
@@ -188,12 +188,12 @@ export function isPrismaError(error: any): boolean {
  */
 export class JsonApiValidationException extends BadRequestException {
   /**
-   * JSON:API 형식의 에러 배열
+   * Array of JSON:API formatted errors
    */
   public readonly jsonApiErrors: JsonApiError[];
 
   /**
-   * @param errors class-validator ValidationError 배열
+   * @param errors class-validator ValidationError array
    */
   constructor(errors: ValidationError[]) {
     const jsonApiErrors = JsonApiValidationException.toJsonApiErrors(errors);
@@ -202,11 +202,11 @@ export class JsonApiValidationException extends BadRequestException {
   }
 
   /**
-   * ValidationError 배열을 JSON:API 에러 형식으로 변환
+   * Convert ValidationError array to JSON:API error format
    *
-   * @param errors class-validator ValidationError 배열
-   * @param parentPath 상위 경로 (중첩 객체 처리용)
-   * @returns JSON:API 에러 배열
+   * @param errors class-validator ValidationError array
+   * @param parentPath Parent path (for nested object handling)
+   * @returns JSON:API error array
    */
   private static toJsonApiErrors(
     errors: ValidationError[],
@@ -232,7 +232,7 @@ export class JsonApiValidationException extends BadRequestException {
         }
       }
 
-      // 중첩된 에러 처리 (중첩 객체/배열)
+      // Handle nested errors (nested objects/arrays)
       if (error.children && error.children.length > 0) {
         result.push(...this.toJsonApiErrors(error.children, pointer));
       }

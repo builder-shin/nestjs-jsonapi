@@ -1,5 +1,5 @@
 /**
- * 서비스 barrel export
+ * Services barrel export
  *
  * @packageDocumentation
  * @module services
