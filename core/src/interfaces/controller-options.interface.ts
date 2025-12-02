@@ -7,6 +7,7 @@
 
 import { Type } from '@nestjs/common';
 import { QueryWhitelistOptions } from './query-options.interface';
+import { IdType } from './module-options.interface';
 
 /**
  * Default CRUD action types
@@ -54,6 +55,49 @@ export const CRUD_ACTIONS: CrudAction[] = [
  * ```
  */
 export type ActionType = CrudAction | (string & {});
+
+/**
+ * 관계 정의 옵션
+ *
+ * @JsonApiController 데코레이터에서 사용됩니다.
+ *
+ * @example
+ * ```typescript
+ * const authorRelation: RelationshipDefinition = {
+ *   type: 'users',
+ *   many: false,
+ * };
+ * ```
+ */
+export interface RelationshipDefinition {
+  /**
+   * 관계 대상의 JSON:API 리소스 타입명
+   * @example 'users', 'comments'
+   */
+  type: string;
+
+  /**
+   * true이면 to-many 관계, false/undefined이면 to-one 관계
+   * @default false
+   */
+  many?: boolean;
+}
+
+/**
+ * JsonApiControllerOptions의 relationships 필드 타입
+ *
+ * 키: 관계 필드명 (예: 'author', 'comments')
+ * 값: 관계 정의
+ *
+ * @example
+ * ```typescript
+ * const relationships: RelationshipsConfig = {
+ *   author: { type: 'users', many: false },
+ *   comments: { type: 'comments', many: true },
+ * };
+ * ```
+ */
+export type RelationshipsConfig = Record<string, RelationshipDefinition>;
 
 /**
  * Controller decorator options
@@ -144,6 +188,48 @@ export interface JsonApiControllerOptions<CreateDto = any, UpdateDto = any> {
    * ```
    */
   query?: QueryWhitelistOptions;
+
+  // ========== 신규 필드 (추가) ==========
+
+  /**
+   * 관계 정의
+   *
+   * Server Config API에서 관계 정보를 노출할 때 사용합니다.
+   * 미지정 시 Server Config 응답에서 relationships가 undefined로 반환됩니다.
+   *
+   * @example
+   * ```typescript
+   * relationships: {
+   *   author: { type: 'users', many: false },
+   *   comments: { type: 'comments', many: true },
+   *   tags: { type: 'tags', many: true },
+   * }
+   * ```
+   */
+  relationships?: RelationshipsConfig;
+
+  /**
+   * ID 타입
+   *
+   * 컨트롤러별 ID 타입을 지정합니다.
+   * 미지정 시 모듈 전역 설정(moduleOptions.idType)을 사용합니다.
+   *
+   * @example 'uuid'
+   */
+  idType?: IdType;
+
+  /**
+   * API 경로
+   *
+   * 컨트롤러의 API 경로를 지정합니다.
+   * 미지정 시 type 또는 모델명 복수형을 사용합니다.
+   *
+   * 참고: 이 필드는 @Controller() 데코레이터와 별개입니다.
+   * 기존 코드에서는 @Controller() 데코레이터를 별도로 적용해야 합니다.
+   *
+   * @example 'blog-posts'
+   */
+  path?: string;
 }
 
 /**

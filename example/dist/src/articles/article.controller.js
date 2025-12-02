@@ -57,31 +57,31 @@ let ArticleController = class ArticleController extends nestjs_jsonapi_1.JsonApi
         });
     }
     async logRequest() {
-        console.log(`[Article] ${this.currentAction} 요청`);
+        console.log(`[Article] ${this.currentAction} request`);
     }
     async loadArticle() {
-        console.log(`[Article] 레코드 로드 중`);
+        console.log(`[Article] Loading record`);
     }
     async notifySubscribers() {
-        console.log(`[Article] 구독자에게 발행 알림 전송: ${this.record?.id}`);
+        console.log(`[Article] Sending publish notification to subscribers: ${this.record?.id}`);
     }
     async beforeCreate() {
         if (!this.model.status) {
             this.model.status = "draft";
         }
-        console.log("[Article] 게시글 생성 전 처리");
+        console.log("[Article] Pre-create processing");
     }
     async afterCreate() {
-        console.log(`[Article] 게시글 생성 완료: ${this.record?.id}`);
+        console.log(`[Article] Article created: ${this.record?.id}`);
     }
     async beforeUpdate() {
         if (this.model.status === "published" && !this.model.publishedAt) {
             this.model.publishedAt = new Date();
         }
-        console.log(`[Article] 게시글 수정 전 처리: ${this.record?.id}`);
+        console.log(`[Article] Pre-update processing: ${this.record?.id}`);
     }
     async beforeDelete() {
-        console.log(`[Article] 게시글 삭제 전 처리: ${this.record?.id}`);
+        console.log(`[Article] Pre-delete processing: ${this.record?.id}`);
     }
 };
 exports.ArticleController = ArticleController;

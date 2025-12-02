@@ -20,24 +20,24 @@ class UpdateArticleDto {
 exports.UpdateArticleDto = UpdateArticleDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)({ message: "제목은 문자열이어야 합니다" }),
+    (0, class_validator_1.IsString)({ message: "Title must be a string" }),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "title", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)({ message: "내용은 문자열이어야 합니다" }),
+    (0, class_validator_1.IsString)({ message: "Content must be a string" }),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "content", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(["draft", "published", "archived"], {
-        message: "상태는 draft, published, archived 중 하나여야 합니다",
+        message: "Status must be one of: draft, published, archived",
     }),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "status", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsDateString)({}, { message: "발행일은 유효한 날짜 형식이어야 합니다" }),
+    (0, class_validator_1.IsDateString)({}, { message: "Published date must be a valid date format" }),
     __metadata("design:type", String)
 ], UpdateArticleDto.prototype, "publishedAt", void 0);
 //# sourceMappingURL=update-article.dto.js.map

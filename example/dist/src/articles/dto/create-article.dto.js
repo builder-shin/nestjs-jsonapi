@@ -19,25 +19,25 @@ class CreateArticleDto {
 }
 exports.CreateArticleDto = CreateArticleDto;
 __decorate([
-    (0, class_validator_1.IsString)({ message: "제목은 문자열이어야 합니다" }),
-    (0, class_validator_1.IsNotEmpty)({ message: "제목은 필수입니다" }),
+    (0, class_validator_1.IsString)({ message: "Title must be a string" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "Title is required" }),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "title", void 0);
 __decorate([
-    (0, class_validator_1.IsString)({ message: "내용은 문자열이어야 합니다" }),
-    (0, class_validator_1.IsNotEmpty)({ message: "내용은 필수입니다" }),
+    (0, class_validator_1.IsString)({ message: "Content must be a string" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "Content is required" }),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "content", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsIn)(["draft", "published", "archived"], {
-        message: "상태는 draft, published, archived 중 하나여야 합니다",
+        message: "Status must be one of: draft, published, archived",
     }),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "status", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)("4", { message: "작성자 ID는 유효한 UUID여야 합니다" }),
-    (0, class_validator_1.IsNotEmpty)({ message: "작성자 ID는 필수입니다" }),
+    (0, class_validator_1.IsUUID)("4", { message: "Author ID must be a valid UUID" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "Author ID is required" }),
     __metadata("design:type", String)
 ], CreateArticleDto.prototype, "authorId", void 0);
 //# sourceMappingURL=create-article.dto.js.map

@@ -8,3 +8,4 @@
 export * from './prisma-adapter.service';
 export * from './json-api-query.service';
 export * from './json-api-serializer.service';
+export * from './controller-registry.service';

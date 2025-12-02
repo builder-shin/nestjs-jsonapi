@@ -17,7 +17,7 @@ class UpdateCommentDto {
 exports.UpdateCommentDto = UpdateCommentDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)({ message: "댓글 내용은 문자열이어야 합니다" }),
+    (0, class_validator_1.IsString)({ message: "Comment body must be a string" }),
     __metadata("design:type", String)
 ], UpdateCommentDto.prototype, "body", void 0);
 //# sourceMappingURL=update-comment.dto.js.map

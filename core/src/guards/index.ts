@@ -6,3 +6,4 @@
  */
 
 export * from './json-api-content-type.guard';
+export * from './server-config-auth.guard';

@@ -18,18 +18,18 @@ class CreateCommentDto {
 }
 exports.CreateCommentDto = CreateCommentDto;
 __decorate([
-    (0, class_validator_1.IsString)({ message: "댓글 내용은 문자열이어야 합니다" }),
-    (0, class_validator_1.IsNotEmpty)({ message: "댓글 내용은 필수입니다" }),
+    (0, class_validator_1.IsString)({ message: "Comment body must be a string" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "Comment body is required" }),
     __metadata("design:type", String)
 ], CreateCommentDto.prototype, "body", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)("4", { message: "작성자 ID는 유효한 UUID여야 합니다" }),
-    (0, class_validator_1.IsNotEmpty)({ message: "작성자 ID는 필수입니다" }),
+    (0, class_validator_1.IsUUID)("4", { message: "Author ID must be a valid UUID" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "Author ID is required" }),
     __metadata("design:type", String)
 ], CreateCommentDto.prototype, "authorId", void 0);
 __decorate([
-    (0, class_validator_1.IsUUID)("4", { message: "게시글 ID는 유효한 UUID여야 합니다" }),
-    (0, class_validator_1.IsNotEmpty)({ message: "게시글 ID는 필수입니다" }),
+    (0, class_validator_1.IsUUID)("4", { message: "Article ID must be a valid UUID" }),
+    (0, class_validator_1.IsNotEmpty)({ message: "Article ID is required" }),
     __metadata("design:type", String)
 ], CreateCommentDto.prototype, "articleId", void 0);
 //# sourceMappingURL=create-comment.dto.js.map

@@ -42,19 +42,19 @@ let UserController = class UserController extends nestjs_jsonapi_1.JsonApiCrudCo
         return this._moduleOptions;
     }
     async logRequest() {
-        console.log(`[User] ${this.currentAction} 요청 시작`);
+        console.log(`[User] ${this.currentAction} request started`);
     }
     async logResponse() {
-        console.log(`[User] ${this.currentAction} 응답 완료`);
+        console.log(`[User] ${this.currentAction} response completed`);
     }
     async beforeCreate() {
-        console.log("[User] 사용자 생성 전 처리");
+        console.log("[User] Pre-create processing");
     }
     async afterCreate() {
-        console.log(`[User] 사용자 생성 완료: ${this.record?.id}`);
+        console.log(`[User] User created: ${this.record?.id}`);
     }
     async beforeDelete() {
-        console.log(`[User] 사용자 삭제 전 처리: ${this.record?.id}`);
+        console.log(`[User] Pre-delete processing: ${this.record?.id}`);
     }
 };
 exports.UserController = UserController;

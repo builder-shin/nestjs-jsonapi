@@ -42,5 +42,8 @@ export * from "./filters";
 // Controllers
 export * from "./controllers";
 
+// Modules
+export * from "./modules";
+
 // Module
 export * from "./json-api.module";

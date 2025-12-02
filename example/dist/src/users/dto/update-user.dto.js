@@ -19,17 +19,17 @@ class UpdateUserDto {
 exports.UpdateUserDto = UpdateUserDto;
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEmail)({}, { message: "유효한 이메일 주소를 입력해주세요" }),
+    (0, class_validator_1.IsEmail)({}, { message: "Please enter a valid email address" }),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)({ message: "이름은 문자열이어야 합니다" }),
+    (0, class_validator_1.IsString)({ message: "Name must be a string" }),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "name", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsIn)(["admin", "user"], { message: "역할은 admin 또는 user여야 합니다" }),
+    (0, class_validator_1.IsIn)(["admin", "user"], { message: "Role must be either admin or user" }),
     __metadata("design:type", String)
 ], UpdateUserDto.prototype, "role", void 0);
 //# sourceMappingURL=update-user.dto.js.map

@@ -6,3 +6,4 @@
  */
 
 export * from "./json-api-crud.controller";
+export * from "./server-config.controller";

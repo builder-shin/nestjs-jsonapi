@@ -42,16 +42,16 @@ let CommentController = class CommentController extends nestjs_jsonapi_1.JsonApi
         return this._moduleOptions;
     }
     async logRequest() {
-        console.log(`[Comment] ${this.currentAction} 요청`);
+        console.log(`[Comment] ${this.currentAction} request`);
     }
     async beforeCreate() {
-        console.log("[Comment] 댓글 생성 전 처리");
+        console.log("[Comment] Pre-create processing");
     }
     async afterCreate() {
-        console.log(`[Comment] 댓글 생성 완료: ${this.record?.id}`);
+        console.log(`[Comment] Comment created: ${this.record?.id}`);
     }
     async beforeDelete() {
-        console.log(`[Comment] 댓글 삭제 전 처리: ${this.record?.id}`);
+        console.log(`[Comment] Pre-delete processing: ${this.record?.id}`);
     }
 };
 exports.CommentController = CommentController;
