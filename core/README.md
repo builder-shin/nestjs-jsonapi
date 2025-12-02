@@ -14,6 +14,7 @@
 - **Query Whitelisting** - Security-first filtering, sorting, and include control
 - **Bulk Operations** - Built-in support for batch create, update, upsert, and delete
 - **Flexible Serialization** - Customizable serializers with relationship support
+- **Server Config API** - Runtime resource metadata for frontend development
 - **Type Safety** - Full TypeScript support with strict mode
 
 ## Requirements
@@ -229,6 +230,12 @@ interface JsonApiModuleOptions {
   prismaServiceToken?: string | symbol; // Prisma service injection token
   idType?: 'string' | 'number' | 'uuid' | 'cuid' | 'auto';
   debug?: boolean;                     // Enable debug logging
+  serverConfig?: {
+    enabled: boolean;                  // Enable Server Config API
+    password: string;                  // Bearer token password (required if enabled)
+    path?: string;                     // API path (default: 'server-config')
+    detailLevel?: 'minimal' | 'standard' | 'full';  // Response detail level
+  };
 }
 ```
 
@@ -445,6 +452,75 @@ query: {
 }
 ```
 
+### Server Config API
+
+런타임에 등록된 리소스의 메타정보를 조회할 수 있는 API입니다. 프론트엔드 개발자가 허용된 필터, 정렬, include 등을 확인할 수 있습니다.
+
+#### 활성화
+
+```typescript
+JsonApiModule.forRoot({
+  // ... 기존 설정
+  serverConfig: {
+    enabled: true,
+    password: 'your-secret-password',  // 필수 (enabled=true 시)
+    path: 'server-config',              // 선택 (기본값: 'server-config')
+    detailLevel: 'standard',            // 'minimal' | 'standard' | 'full'
+  },
+})
+```
+
+#### 엔드포인트
+
+```bash
+# 전체 리소스 목록 조회
+curl -H "Authorization: Bearer your-secret-password" \
+  https://api.example.com/server-config
+
+# 특정 모델 상세 조회
+curl -H "Authorization: Bearer your-secret-password" \
+  https://api.example.com/server-config/article
+```
+
+#### 응답 예시
+
+```json
+{
+  "version": "1.0.0",
+  "global": {
+    "baseUrl": "https://api.example.com",
+    "idType": "string",
+    "pagination": { "defaultLimit": 20, "maxLimit": 100 }
+  },
+  "resources": [
+    {
+      "model": "article",
+      "type": "articles",
+      "idType": "uuid",
+      "enabledActions": ["index", "show", "create", "update", "delete"],
+      "pagination": { "defaultLimit": 20, "maxLimit": 100 },
+      "query": {
+        "allowedFilters": ["status", "authorId"],
+        "allowedSorts": ["createdAt", "-updatedAt"],
+        "allowedIncludes": ["author", "comments"]
+      },
+      "relationships": {
+        "author": { "type": "users", "cardinality": "one" },
+        "comments": { "type": "comments", "cardinality": "many" }
+      }
+    }
+  ]
+}
+```
+
+#### detailLevel 별 응답 필드
+
+| 필드 | minimal | standard | full |
+|------|---------|----------|------|
+| `model`, `type`, `idType`, `enabledActions`, `pagination` | ✅ | ✅ | ✅ |
+| `query`, `relationships` | ❌ | ✅ | ✅ |
+| `validation` (DTO 검증 규칙) | ❌ | ❌ | ✅ |
+
 ### Services
 
 #### PrismaAdapterService
@@ -495,6 +571,16 @@ serializeMany(data: any[], serializer: Type<any>, options?: SerializeOptions): J
 serializeNull(meta?: Record<string, unknown>): JsonApiDocument
 ```
 
+#### ControllerRegistryService
+
+Collects and manages `@JsonApiController` metadata using NestJS DiscoveryService.
+
+```typescript
+getAll(): Map<string, { controllerClass: Type<any>; options: JsonApiControllerOptions }>
+getByModel(model: string): JsonApiControllerOptions | undefined
+buildResourceConfig(model: string, moduleOptions: JsonApiModuleOptions): ResourceConfigInfo
+```
+
 ### Exceptions
 
 #### JsonApiValidationException
@@ -524,17 +610,18 @@ throw new JsonApiQueryException([
 ```
 packages/core/src/
 ├── constants/           # Metadata symbol constants
-├── interfaces/          # JSON:API, filter, module options types
+├── interfaces/          # JSON:API, filter, module options, server-config types
 ├── utils/               # Naming, query parsing, ID conversion
 ├── decorators/          # @JsonApiController, @Attribute, @BeforeAction, etc.
-├── services/            # PrismaAdapter, QueryService, SerializerService
+├── services/            # PrismaAdapter, QueryService, SerializerService, ControllerRegistry
 ├── exceptions/          # JSON:API format exceptions
 ├── dto/                 # Body/Query DTOs
 ├── pipes/               # JsonApiBodyPipe
-├── guards/              # Content-Type validation guard
+├── guards/              # Content-Type, ServerConfigAuth guards
 ├── interceptors/        # Response header interceptor
 ├── filters/             # Exception filter
-├── controllers/         # JsonApiCrudController base class
+├── controllers/         # JsonApiCrudController, ServerConfigController
+├── modules/             # ServerConfigModule
 ├── types/               # TypeScript type declarations
 ├── json-api.module.ts   # Module definition
 └── index.ts             # Barrel export
